@@ -1,0 +1,12 @@
+[location]
+latitude = 0
+longitude = 0
+
+[netatmo]
+client_id = ''
+client_secret = ''
+init_refresh_token = ''
+
+[display]
+main_module_icon = 'bed.svg'
+indoor_module_icon = 'sofa.svg'
