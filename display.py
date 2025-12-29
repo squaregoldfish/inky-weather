@@ -424,4 +424,7 @@ battery(436, 'O', outdoor_module['battery'])
 battery(453, 'R', rain_module['battery'])
 battery(470, 'L', indoor_module['battery'])
 
+
+d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 10, 800, 10, font_weight='Regular', fill='black', stroke_width=0, text_anchor='end'))
+
 d.save_png("display.png")
