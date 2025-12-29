@@ -230,8 +230,8 @@ def humidity(d, module):
     d.append(draw.Text('%', 30, 413, 111, font_weight='Bold', fill=humidity_color, stroke_width=0))
 
 def rain(d, module, forecast):
-    hour = module['sum_rain_1']
-    day = module['sum_rain_24']
+    hour = round(module['sum_rain_1'], 1)
+    day = round(module['sum_rain_24'], 1)
 
     START = 550
     END = 780
@@ -253,10 +253,11 @@ def rain(d, module, forecast):
         hour_width = hour * 10 * tenth_width
 
         d.append(draw.Rectangle(START + day_width, 30, hour_width, 60, fill='rgb(150, 150, 255)', stroke='rgb(150, 150, 255)'))       
-        d.append(draw.Rectangle(START, 30, day_width, 60, fill='rgb(100, 100, 255)', stroke='rgb(100, 100, 255)'))
+        if day != hour:
+            d.append(draw.Rectangle(START, 30, day_width, 60, fill='rgb(100, 100, 255)', stroke='rgb(100, 100, 255)'))
         
         d.append(draw.Text(f'{day:.1f}', 18, 550, 110, font_weight='Regular', fill='rgb(50, 50, 255)', stroke_width=0))
-        d.append(draw.Text(f'{hour:.1f}', 18, 664, 110, font_weight='Regular', fill='rgb(150, 150, 255)', stroke_width=0, text_anchor='center'))
+        d.append(draw.Text(f'{hour:.1f}', 18, 654, 110, font_weight='Regular', fill='rgb(150, 150, 255)', stroke_width=0, text_anchor='center'))
         d.append(draw.Text(f'{forecast:.1f}', 18, 780, 110, font_weight='Regular', font_style='Italic', fill='rgb(100, 100, 255)', stroke_width=0, text_anchor='end'))
 
 def temperature_plot(ax, dates, temps, points, markers):
