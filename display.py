@@ -175,7 +175,6 @@ def split_number(number):
     return (int_part, decimal_part)
 
 def outdoor_temperature(d, module):
-    # Outdoor Temperature
     temp = module['Temperature']
     int_part, decimal_part = split_number(temp)    
 
@@ -190,13 +189,13 @@ def outdoor_temperature(d, module):
     trend = module['temp_trend']
 
     # Max Temp
-    max = str(module['max_temp'])
+    max = f'{module["max_temp"]:.1f}'
     max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
 
     d.append(draw.Lines(195, 90, 205, 75, 215, 90, fill=max_arrow_color, stroke=None, close='true'))
     d.append(draw.Text(max, 17, 260, 90, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0, text_anchor='end'))
 
-    min = str(module['min_temp'])
+    min = f'{module["min_temp"]:.1f}'
     min_arrow_color = MIN_ARROW_ON if trend == 'down' else MIN_ARROW_OFF
 
     d.append(draw.Lines(195, 100, 205, 115, 215, 100, fill=min_arrow_color, stroke=None, close='true'))
