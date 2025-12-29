@@ -256,8 +256,8 @@ def rain(d, module, forecast):
         if day != hour:
             d.append(draw.Rectangle(START, 30, day_width, 60, fill='rgb(100, 100, 255)', stroke='rgb(100, 100, 255)'))
         
-        d.append(draw.Text(f'{day:.1f}', 18, 550, 110, font_weight='Regular', fill='rgb(50, 50, 255)', stroke_width=0))
-        d.append(draw.Text(f'{hour:.1f}', 18, 654, 110, font_weight='Regular', fill='rgb(150, 150, 255)', stroke_width=0, text_anchor='center'))
+        d.append(draw.Text(f'{day:.1f}mm', 26, 550, 113, font_weight='Bold', fill='rgb(50, 50, 255)', stroke_width=0))
+        d.append(draw.Text(f'{hour:.1f}', 18, 684, 110, font_weight='Regular', fill='rgb(150, 150, 255)', stroke_width=0, text_anchor='center'))
         d.append(draw.Text(f'{forecast:.1f}', 18, 780, 110, font_weight='Regular', font_style='Italic', fill='rgb(100, 100, 255)', stroke_width=0, text_anchor='end'))
 
 def temperature_plot(ax, dates, temps, points, markers):
