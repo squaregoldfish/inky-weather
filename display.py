@@ -278,7 +278,7 @@ def forecast_plot(d, hourly, daily, sunrise, sunset):
 
     plot_hour = axs[0]
     temperature_plot(plot_hour, hourly['date'], hourly['temperature_2m'], 2000, False)
-    precip_plot(plot_hour, hourly['date'], hourly['precipitation'], 0.015, 0.5)
+    precip_plot(plot_hour, hourly['date'], hourly['precipitation'], 0.025, 0.5)
 
     #next_midnight = (datetime.now(cet) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     #plot_hour.axvline(pd.Timestamp(next_midnight), color='gray', linestyle='--', linewidth=1, zorder=-1)
