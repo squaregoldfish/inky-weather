@@ -368,15 +368,15 @@ def get_sun(position, timezone):
     return(sunrise, sunset)
 
 def sun_info(d, sunrise, sunset):
-    d.append(draw.Image(500, 405, 45, 45, 'sunrise.svg', embed=True))
-    d.append(draw.Text(sunrise.strftime("%H"), 25, 587, 435, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 25, 585, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0))
-    d.append(draw.Text(sunrise.strftime("%M"), 25, 598, 435, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Image(500, 402, 45, 45, 'sunrise.svg', embed=True))
+    d.append(draw.Text(sunrise.strftime("%H"), 25, 587, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 25, 585, 430, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Text(sunrise.strftime("%M"), 25, 598, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0))
 
-    d.append(draw.Image(500, 445, 45, 45, 'sunset.svg', embed=True))
-    d.append(draw.Text(sunset.strftime("%H"), 25, 587, 473, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 25, 585, 471, font_weight='Bold', fill=SUNSET, stroke_width=0))
-    d.append(draw.Text(sunset.strftime("%M"), 25, 598, 473, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Image(500, 442, 45, 45, 'sunset.svg', embed=True))
+    d.append(draw.Text(sunset.strftime("%H"), 25, 587, 470, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 25, 585, 468, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Text(sunset.strftime("%M"), 25, 598, 470, font_weight='Bold', fill=SUNSET, stroke_width=0))
 
 
 # Load Data
