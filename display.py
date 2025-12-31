@@ -84,6 +84,17 @@ CO2_SCALE = [
     {"value": 1200.0, "color": [144,  27,  99]}
 ]
 
+RAIN_SCALE = [
+    {"value":  0.0, "color": [165, 218, 243]},
+    {"value":  4.3, "color": [114, 198, 235]},
+    {"value":  8.6, "color": [ 80, 167, 221]},
+    {"value": 12.9, "color": [ 61, 123, 186]},
+    {"value": 17.1, "color": [ 49,  90, 145]},
+    {"value": 21.4, "color": [ 42,  71, 119]},
+    {"value": 25.7, "color": [ 28,  44,  79]},
+    {"value": 30.0, "color": [ 10,  12,  25]}
+]
+
 
 def _interpolate_color(color1, color2, proportion):
   return round(color1 + (color2 - color1) * proportion)
@@ -219,6 +230,10 @@ def rain(d, module, forecast):
     hour = round(module['sum_rain_1'], 1)
     day = round(module['sum_rain_24'], 1)
 
+    hour_color = get_color(hour, RAIN_SCALE, 'rgb')
+    day_color = get_color(day, RAIN_SCALE, 'rgb')
+    forecast_color = get_color(forecast, RAIN_SCALE, 'rgb')
+
     START = 550
     END = 780
     WIDTH = END - START
@@ -231,20 +246,19 @@ def rain(d, module, forecast):
         else:
             # Forecast
             tenth_width = WIDTH / (forecast * 10)
-            d.append(draw.Lines(START, 30, END, 30, END, 90, START, 90, fill='rgb(245, 245, 255)',
-                            stroke='rgb(125, 125, 255)', stroke_dasharray='9,5', close='false'))
+            d.append(draw.Lines(START, 30, END, 30, END, 90, START, 90, fill='white',
+                            stroke=forecast_color, stroke_dasharray='9,5', close='false'))
 
-        
         day_width = (day - hour) * 10 * tenth_width
         hour_width = hour * 10 * tenth_width
 
-        d.append(draw.Rectangle(START + day_width, 30, hour_width, 60, fill='rgb(150, 150, 255)', stroke='rgb(150, 150, 255)'))       
+        d.append(draw.Rectangle(START + day_width, 30, hour_width, 60, fill=hour_color, stroke=hour_color))       
         if day != hour:
-            d.append(draw.Rectangle(START, 30, day_width, 60, fill='rgb(100, 100, 255)', stroke='rgb(100, 100, 255)'))
+            d.append(draw.Rectangle(START, 30, day_width, 60, fill=day_color, stroke=day_color))
         
-        d.append(draw.Text(f'{day:.1f}mm', 26, 550, 113, font_weight='Bold', fill='rgb(50, 50, 255)', stroke_width=0))
-        d.append(draw.Text(f'{hour:.1f}', 18, 684, 110, font_weight='Regular', fill='rgb(150, 150, 255)', stroke_width=0, text_anchor='center'))
-        d.append(draw.Text(f'{forecast:.1f}', 18, 780, 110, font_weight='Regular', font_style='Italic', fill='rgb(100, 100, 255)', stroke_width=0, text_anchor='end'))
+        d.append(draw.Text(f'{day:.1f}mm', 26, 550, 113, font_weight='Bold', fill=day_color, stroke_width=0))
+        d.append(draw.Text(f'{hour:.1f}', 18, 684, 110, font_weight='Regular', fill=hour_color, stroke_width=0, text_anchor='center'))
+        d.append(draw.Text(f'{forecast:.1f}', 18, 780, 110, font_weight='Regular', font_style='Italic', fill=forecast_color, stroke_width=0, text_anchor='end'))
 
 def temperature_plot(ax, dates, temps, points, markers):
     x = (dates - dates.min()).dt.total_seconds()  # Convert to seconds
