@@ -238,7 +238,7 @@ def rain(d, module, forecast):
     END = 780
     WIDTH = END - START
     
-    if day == 0 and hour == 0:
+    if day == 0 and hour == 0 and forecast == 0:
         d.append(draw.Text('Dry', 60, 580, 75, font_weight='Bold', fill='rgb(220, 220, 255)', stroke_width=0, text_anchor='center'))
     else:
         if forecast <= day:
