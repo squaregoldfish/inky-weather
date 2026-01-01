@@ -286,18 +286,18 @@ def precip_plot(ax, dates, precip, bar_width, min_y):
     ax.set_zorder(ax2.get_zorder()+1)
     ax.patch.set_visible(False)
 
+    return ax2
+
 def forecast_plot(d, hourly, daily, sunrise, sunset):
     plt.rc('font', family='Noto Sans Mono', weight='regular', size=10)
     fig, axs = plt.subplots(1, 2, figsize=(8, 2.75))
 
     plot_hour = axs[0]
     temperature_plot(plot_hour, hourly['date'], hourly['temperature_2m'], 2000, False)
-    precip_plot(plot_hour, hourly['date'], hourly['precipitation'], 0.025, 0.5)
+    sun_ax = precip_plot(plot_hour, hourly['date'], hourly['precipitation'], 0.025, 0.5)
 
-    #next_midnight = (datetime.now(cet) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-    #plot_hour.axvline(pd.Timestamp(next_midnight), color='gray', linestyle='--', linewidth=1, zorder=-1)
-    plot_hour.axvline(sunrise, color=SUNRISE, linewidth=2, zorder=-1)
-    plot_hour.axvline(sunset, color=SUNSET, linewidth=2, zorder=-1)
+    sun_ax.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
+    sun_ax.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
 
     plot_hour.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=cet))
 
