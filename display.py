@@ -139,32 +139,6 @@ def get_color(value, scale, type):
         return result
 
 
-def temperature_plot(ax, dates, temps, points, markers):
-    x = (dates - dates.min()).dt.total_seconds()  # Convert to seconds
-    y = temps.values
-    
-    xnew = np.linspace(x.min(), x.max(), points)
-    ynew = np.interp(xnew, x, y)
-    timestamps_new = dates.min() + pd.to_timedelta(xnew, unit='s')
-    spline_colors = [get_color(y, TEMP_SCALE, 'hex') for y in ynew]
-
-    ax.scatter(timestamps_new, ynew, c=spline_colors, s=1 if markers else 8)
-
-    if markers:
-        ax.scatter(dates, temps, color=[get_color(y, TEMP_SCALE, 'hex') for y in temps])
-
-def precip_plot(ax, dates, precip, bar_width, min_y):
-    ax2 = ax.twinx()
-
-    ax2.bar(dates, precip, color='#ddddff', width=bar_width)
-    if (precip < 0.1).all():
-        ax2.set_yticks([])
-    elif (precip <= min_y).all():
-        ax2.set_ylim((0, min_y))
-        
-    ax.set_zorder(ax2.get_zorder()+1)
-    ax.patch.set_visible(False)
-
 def split_number(number):
     number_str = str(number)
     int_part = str(math.floor(number))
@@ -275,18 +249,11 @@ def temperature_plot(ax, dates, temps, points, markers):
         ax.scatter(dates, temps, color=[get_color(y, TEMP_SCALE, 'hex') for y in temps])
 
 def precip_plot(ax, dates, precip, bar_width, min_y):
-    ax2 = ax.twinx()
-
-    ax2.bar(dates, precip, color='#ddddff', width=bar_width)
+    ax.bar(dates, precip, color='#ddddff', width=bar_width)
     if (precip < 0.1).all():
-        ax2.set_yticks([])
+        ax.set_yticks([])
     elif (precip <= min_y).all():
-        ax2.set_ylim((0, min_y))
-        
-    ax.set_zorder(ax2.get_zorder()+1)
-    ax.patch.set_visible(False)
-
-    return ax2
+        ax.set_ylim((0, min_y))
 
 def forecast_plot(d, hourly, daily, sunrise, sunset):
     plt.rc('font', family='Noto Sans Mono', weight='regular', size=10)
@@ -294,17 +261,27 @@ def forecast_plot(d, hourly, daily, sunrise, sunset):
 
     plot_hour = axs[0]
     temperature_plot(plot_hour, hourly['date'], hourly['temperature_2m'], 2000, False)
-    sun_ax = precip_plot(plot_hour, hourly['date'], hourly['precipitation'], 0.025, 0.5)
 
-    sun_ax.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
-    sun_ax.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
+    precip_hour = plot_hour.twinx()
+    plot_hour.set_zorder(precip_hour.get_zorder()+1)
+    plot_hour.patch.set_visible(False)
+
+    precip_plot(precip_hour, hourly['date'], hourly['precipitation'], 0.025, 0.5)
+
+    precip_hour.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
+    precip_hour.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
 
     plot_hour.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=cet))
 
     plot_day = axs[1]
     temperature_plot(plot_day, daily['date'], daily['temperature_2m_min'], 1000, True)
     temperature_plot(plot_day, daily['date'], daily['temperature_2m_max'], 1000, True)
-    precip_plot(plot_day, daily['date'], daily['precipitation_sum'], 0.5, 5)
+
+    precip_day = plot_day.twinx()
+    plot_day.set_zorder(precip_day.get_zorder()+1)
+    plot_day.patch.set_visible(False)
+
+    precip_plot(precip_day, daily['date'], daily['precipitation_sum'], 0.5, 5)
     plot_day.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=cet))
     plot_day.xaxis.set_major_locator(MultipleLocator(1))
 
