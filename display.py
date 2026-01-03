@@ -63,14 +63,14 @@ HUMIDITY_SCALE = [
 ]
 
 PRESSURE_SCALE = [
-    {"value":  950.0, "color": [  6,   4, 192]},
-    {"value":  962.9, "color": [ 12,  68, 254]},
-    {"value":  975.7, "color": [  6, 192, 255]},
-    {"value":  988.6, "color": [ 63, 255, 192]},
-    {"value": 1001.4, "color": [189, 249,  58]},
-    {"value": 1014.3, "color": [252, 191,   2]},
-    {"value": 1027.1, "color": [255,  64,   0]},
-    {"value": 1040.0, "color": [189,   0,   0]}
+    {"value":  950.0, "color": [ 34, 150, 255]},
+    {"value":  962.9, "color": [ 11, 199, 253]},
+    {"value":  975.7, "color": [ 57, 251, 251]},
+    {"value":  988.6, "color": [128, 245, 253]},
+    {"value": 1001.4, "color": [253, 241,   8]},
+    {"value": 1014.3, "color": [252, 177,   5]},
+    {"value": 1027.1, "color": [255, 128,   3]},
+    {"value": 1040.0, "color": [254,  66,   0]}
 ]
 
 CO2_SCALE = [
@@ -137,7 +137,7 @@ def get_color(value, scale, type):
     else:
         return result
 
-def interpolate_indexed_colors(scale, n=100):
+def interpolate_indexed_colors(scale, n=50):
     values = np.array([p["value"] for p in scale])
     colors = np.array([p["color"] for p in scale])
 
@@ -243,13 +243,13 @@ def outdoor_temperature(d, module):
     max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
 
     d.append(draw.Lines(195, 35, 205, 20, 215, 35, fill=max_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(max, 17, 195, 55, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Text(max, 17, 195, 54, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
 
     min = f'{module["min_temp"]:.1f}'
     min_arrow_color = MIN_ARROW_ON if trend == 'down' else MIN_ARROW_OFF
 
     d.append(draw.Lines(195, 100, 205, 115, 215, 100, fill=min_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(min, 17, 195, 95, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Text(min, 17, 195, 94, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
 
 def pressure(d, module):
     pressure = module['Pressure']
