@@ -219,8 +219,12 @@ def gauge_chart(data, unit, scale):
 
 def split_number(number):
     number_str = str(number)
-    int_part = str(math.floor(number))
-    decimal_part = number_str[number_str.find('.') + 1]
+    int_part = str(math.floor(abs(number)))
+    if number < 0:
+        int_part = f'-{int_part}'
+
+    point_location = number_str.find('.')
+    decimal_part = number_str[point_location + 1] if point_location > 0 else '0'
 
     return (int_part, decimal_part)
 
@@ -231,7 +235,7 @@ def outdoor_temperature(d, module):
     d.append(draw.Rectangle(10, 20, 180, 95, fill=get_color(temp, TEMP_SCALE, 'rgb')))
 
     d.append(draw.Text(int_part, 105, 140, 105, font_weight='Bold', fill='white', stroke='white', text_anchor='end'))
-    d.append(draw.Text('.', 60, 132, 105, font_weight='Bold', fill="rgb(255, 255, 255)", stroke='white'))
+    d.append(draw.Text('.', 60, 133, 105, font_weight='Bold', fill="rgb(255, 255, 255)", stroke='white'))
     d.append(draw.Text(decimal_part, 40, 160, 105, font_weight='Bold', fill='white', stroke='white'))
     d.append(draw.Text('°C', 28, 150, 50, font_weight='Bold', fill='white', stroke='white'))
 
