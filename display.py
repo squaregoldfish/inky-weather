@@ -309,7 +309,7 @@ def rain(d, module, forecast):
     WIDTH = END - START
     
     if day == 0 and hour == 0 and forecast == 0:
-        d.append(draw.Text('Dry', 60, 630, 75, font_weight='Bold', fill='rgb(220, 220, 255)', stroke_width=0, text_anchor='center'))
+        d.append(draw.Text('Dry', 60, 640, 75, font_weight='Bold', fill='rgb(220, 220, 255)', stroke_width=0, text_anchor='center'))
     else:
         if forecast <= day:
             tenth_width = WIDTH / (day * 10)
