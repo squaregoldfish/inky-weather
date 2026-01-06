@@ -1,4 +1,5 @@
 #!/bin/bash
+source .venv/bin/activate
 while true; do
     now=$(date +"%Y-%m-%d %H:%M:%S")
     echo "Running at $now"
@@ -16,6 +17,9 @@ while true; do
 
     echo "  Updating display"
     python display.py
+
+    echo "  Setting display"
+    python inky_image.py --file display.png --saturation 0
 
     next_run=$(date -d "+15 minutes" +"%Y-%m-%d %H:%M:%S")
     echo "Next run: $next_run"
