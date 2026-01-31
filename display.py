@@ -15,7 +15,8 @@ import io
 from astral import LocationInfo
 from astral.sun import sun
 
-MIN_MAX_COLOR = 'rgb(100, 100, 100)'
+#MIN_MAX_COLOR = 'rgb(100, 100, 100)'
+MIN_MAX_COLOR = 'black'
 MAX_ARROW_ON = 'rgb(255, 0, 0)'
 MAX_ARROW_OFF = 'rgb(255, 150, 150)'
 MIN_ARROW_ON = 'rgb(0, 0, 255)'
@@ -232,12 +233,12 @@ def outdoor_temperature(d, module):
     temp = module['Temperature']
     int_part, decimal_part = split_number(temp)    
 
-    d.append(draw.Rectangle(10, 20, 180, 95, fill=get_color(temp, TEMP_SCALE, 'rgb')))
+    #d.append(draw.Rectangle(10, 20, 180, 95, fill=get_color(temp, TEMP_SCALE, 'rgb')))
 
-    d.append(draw.Text(int_part, 105, 140, 105, font_weight='Bold', fill='white', stroke='white', text_anchor='end'))
-    d.append(draw.Text('.', 60, 133, 105, font_weight='Bold', fill="rgb(255, 255, 255)", stroke='white'))
-    d.append(draw.Text(decimal_part, 40, 160, 105, font_weight='Bold', fill='white', stroke='white'))
-    d.append(draw.Text('°C', 28, 150, 50, font_weight='Bold', fill='white', stroke='white'))
+    d.append(draw.Text(int_part, 105, 140, 105, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
+    d.append(draw.Text('.', 60, 133, 105, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text(decimal_part, 40, 160, 105, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text('°C', 28, 150, 50, font_weight='Bold', fill='black', stroke='black'))
 
     # Max/Min and trend
     trend = module['temp_trend']
@@ -301,7 +302,8 @@ def rain(d, module, forecast):
     day = round(module['sum_rain_24'], 1)
 
     hour_color = 'rgb(118, 199, 236)'
-    day_color = 'rgb(74, 153, 210)'
+    day_color = '#9999ff'
+    #day_color = 'rgb(74, 153, 210)'
     forecast_color = day_color
 
     #hour_color = get_color(hour, RAIN_SCALE, 'rgb')
@@ -333,25 +335,28 @@ def rain(d, module, forecast):
         d.append(draw.Text(f'{day:.1f}mm', 26, START, 114, font_weight='Bold', fill=day_color, stroke_width=0))
         
         if hour > 0:
-            d.append(draw.Text(f'{hour:.1f}', 18, START, 134, font_weight='Regular', fill=hour_color, stroke_width=0, text_anchor='center'))
-        d.append(draw.Text(f'{forecast:.1f}', 18, END, 111, font_weight='Regular', font_style='Italic', fill=forecast_color, stroke_width=0, text_anchor='end'))
+            d.append(draw.Text(f'{hour:.1f}', 18, START, 134, font_weight='Bold', fill=hour_color, stroke_width=0, text_anchor='center'))
+        d.append(draw.Text(f'{forecast:.1f}', 18, END, 111, font_weight='Bold', font_style='Italic', fill=forecast_color, stroke_width=0, text_anchor='end'))
 
-def temperature_plot(ax, dates, temps, points, markers):
-    x = (dates - dates.min()).dt.total_seconds()  # Convert to seconds
-    y = temps.values
-    
-    xnew = np.linspace(x.min(), x.max(), points)
-    ynew = np.interp(xnew, x, y)
-    timestamps_new = dates.min() + pd.to_timedelta(xnew, unit='s')
-    spline_colors = [get_color(y, TEMP_SCALE, 'hex') for y in ynew]
+#def temperature_plot(ax, dates, temps, points, markers):
+#    x = (dates - dates.min()).dt.total_seconds()  # Convert to seconds
+#    y = temps.values
+#    
+#    xnew = np.linspace(x.min(), x.max(), points)
+#    ynew = np.interp(xnew, x, y)
+#    timestamps_new = dates.min() + pd.to_timedelta(xnew, unit='s')
+#    spline_colors = [get_color(y, TEMP_SCALE, 'hex') for y in ynew]
+#
+#    ax.scatter(timestamps_new, ynew, c=spline_colors, s=1 if markers else 8)
+#
+#    if markers:
+#        ax.scatter(dates, temps, color=[get_color(y, TEMP_SCALE, 'hex') for y in temps])
 
-    ax.scatter(timestamps_new, ynew, c=spline_colors, s=1 if markers else 8)
-
-    if markers:
-        ax.scatter(dates, temps, color=[get_color(y, TEMP_SCALE, 'hex') for y in temps])
+def temperature_plot(ax, dates, temps, markers, color, linewidth):
+    ax.plot(dates, temps, color=color, linewidth=linewidth, marker='o', markersize=6 if markers else 0)
 
 def precip_plot(ax, dates, precip, bar_width, min_y):
-    ax.bar(dates, precip, color='#ddddff', width=bar_width)
+    ax.bar(dates, precip, color='#9999ff', width=bar_width)
     if (precip < 0.1).all():
         ax.set_yticks([])
     elif (precip <= min_y).all():
@@ -362,7 +367,7 @@ def forecast_plot(d, hourly, daily, sunrise, sunset):
     fig, axs = plt.subplots(1, 2, figsize=(8, 2.75))
 
     plot_hour = axs[0]
-    temperature_plot(plot_hour, hourly['date'], hourly['temperature_2m'], 2000, False)
+    temperature_plot(plot_hour, hourly['date'], hourly['temperature_2m'], False, 'black', 3)
 
     precip_hour = plot_hour.twinx()
     plot_hour.set_zorder(precip_hour.get_zorder()+1)
@@ -376,8 +381,8 @@ def forecast_plot(d, hourly, daily, sunrise, sunset):
     plot_hour.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=cet))
 
     plot_day = axs[1]
-    temperature_plot(plot_day, daily['date'], daily['temperature_2m_min'], 1000, True)
-    temperature_plot(plot_day, daily['date'], daily['temperature_2m_max'], 1000, True)
+    temperature_plot(plot_day, daily['date'], daily['temperature_2m_min'], True, 'blue', 2)
+    temperature_plot(plot_day, daily['date'], daily['temperature_2m_max'], True, 'red', 2)
 
     precip_day = plot_day.twinx()
     plot_day.set_zorder(precip_day.get_zorder()+1)
@@ -406,8 +411,8 @@ def indoor_temp(y, icon, module):
 
     int_part, decimal_part = split_number(temperature)
 
-    temperature_color = get_color(temperature, TEMP_SCALE, 'rgb')
-    #temperature_color='black'
+    #temperature_color = get_color(temperature, TEMP_SCALE, 'rgb')
+    temperature_color='black'
     
     d.append(draw.Text(int_part, 25, 105, y, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
     d.append(draw.Text('.', 25, 103, y, font_weight='Bold', fill=temperature_color, stroke_width=0))
