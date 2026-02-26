@@ -509,7 +509,7 @@ d.append(r)
 sunrise, sunset = get_sun(config['location'], cet)
 
 outdoor_temperature(d, outdoor_module)
-1
+
 pressure = main_module['Pressure']
 pressure_text = f'{pressure:.01f}'
 
@@ -563,6 +563,6 @@ battery(436, 'O', outdoor_module['battery'])
 battery(453, 'R', rain_module['battery'])
 battery(470, 'L', indoor_module['battery'])
 
-d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 10, 800, 10, font_weight='Regular', fill='black', stroke_width=0, text_anchor='end'))
+d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 11, 800, 10, font_weight='Regular', fill='black', stroke_width=0, text_anchor='end'))
 
 d.save_png("display.png")
