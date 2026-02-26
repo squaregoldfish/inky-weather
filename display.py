@@ -369,6 +369,12 @@ def forecast_plot(d, hourly, daily, sunrise, sunset):
     plot_hour = axs[0]
     temperature_plot(plot_hour, hourly['date'], hourly['temperature_2m'], False, 'black', 3)
 
+    range = max(hourly['temperature_2m']) - min(hourly['temperature_2m'])
+    if range < 5:
+        midpoint = min(hourly['temperature_2m']) + (range / 2)
+        plot_hour.set_ylim([midpoint - 2.5, midpoint + 2.5])
+
+
     precip_hour = plot_hour.twinx()
     plot_hour.set_zorder(precip_hour.get_zorder()+1)
     plot_hour.patch.set_visible(False)
@@ -383,6 +389,11 @@ def forecast_plot(d, hourly, daily, sunrise, sunset):
     plot_day = axs[1]
     temperature_plot(plot_day, daily['date'], daily['temperature_2m_min'], True, 'blue', 2)
     temperature_plot(plot_day, daily['date'], daily['temperature_2m_max'], True, 'red', 2)
+
+    range = max(daily['temperature_2m_max']) - min(daily['temperature_2m_min'])
+    if range < 5:
+        midpoint = min(daily['temperature_2m_min']) + (range / 2)
+        plot_day.set_ylim([midpoint - 2.5, midpoint + 2.5])
 
     precip_day = plot_day.twinx()
     plot_day.set_zorder(precip_day.get_zorder()+1)
