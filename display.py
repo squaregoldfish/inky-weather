@@ -64,14 +64,14 @@ HUMIDITY_SCALE = [
 ]
 
 PRESSURE_SCALE = [
-    {"value":  970.0, "color": [ 34, 150, 255]},
-    {"value":  980.0, "color": [ 11, 199, 253]},
-    {"value":  990.0, "color": [ 57, 251, 251]},
-    {"value": 1000.0, "color": [128, 245, 253]},
+    {"value":  970.0, "color": [  0, 255, 255]},
+    {"value":  980.0, "color": [ 50, 255, 255]},
+    {"value":  990.0, "color": [100, 255, 255]},
+    {"value": 1000.0, "color": [200, 255, 200]},
     {"value": 1010.0, "color": [253, 241,   8]},
     {"value": 1020.0, "color": [252, 177,   5]},
     {"value": 1030.0, "color": [255, 128,   3]},
-    {"value": 1040.0, "color": [254,  66,   0]}
+    {"value": 1040.0, "color": [255,  50,  50]}
 ]
 
 CO2_SCALE = [
@@ -217,6 +217,84 @@ def gauge_chart(data, unit, scale):
     plt.close()
 
     return plot_bytes.getvalue()
+
+def rgb_to_hex(rgb):
+    return "#{:02X}{:02X}{:02X}".format(*rgb)
+
+def gauge_chart_stepped(data, unit, scale):
+
+    min_val = scale[0]['value']
+    max_val = scale[-1]['value']
+
+    # Convert value to angular position (0° = max, 180° = min)
+    def val_to_deg(v):
+        return 180.0 * (1.0 - (v - min_val) / (max_val - min_val))
+
+    fig, ax = plt.subplots(figsize=(6, 3))
+    ax.set_aspect('equal')
+
+    # Define geometry
+    outer_r = 1.0
+    thickness = 0.30
+    inner_r = outer_r - thickness
+
+    wedge_colors = [rgb_to_hex(p['color']) for p in scale]
+
+    wedge_starts = [scale[0]['value']]
+    wedge_ends = []
+
+    for i in range(len(scale) - 1):
+        t = scale[i]['value']
+        n = scale[i + 1]['value']
+        
+        boundary = t + (n - t) / 2
+        wedge_ends.append(boundary)
+        wedge_starts.append(boundary)
+
+    wedge_ends.append(scale[-1]['value'])
+
+    # Draw each zone as a wedge
+    for i in range(len(wedge_starts)):
+        theta1 = val_to_deg(wedge_ends[i])
+        theta2 = val_to_deg(wedge_starts[i])
+        color = wedge_colors[i]
+
+        wedge = patches.Wedge(center=(0, 0), r=outer_r,
+                               theta1=theta1, theta2=theta2,
+                               width=thickness,
+                               facecolor=color, edgecolor=color, linewidth=1)
+        ax.add_patch(wedge)
+
+    # Draw the needle
+    for needle in data:
+        # Clamp the input value
+        value = max(min_val, min(max_val, needle[0]))
+        
+        angle_deg = val_to_deg(value)
+        angle_rad = np.deg2rad(angle_deg)
+        needle_len = inner_r * 0.9
+        nx, ny = needle_len * np.cos(angle_rad), needle_len * np.sin(angle_rad)
+        ax.plot([0, nx], [0, ny], lw=3.5, color=needle[1], zorder=5)
+        ax.scatter([0], [0], s=120, color=needle[1], zorder=6)
+
+    label = '/'.join([str(n[0]) for n in data]) + unit
+    
+    # Labels and text
+    ax.text(0, -0.20, label, ha='center', va='center',
+            fontsize=28, fontweight='bold', color='black')
+
+    ax.set_xlim(-1.15, 1.15)
+    ax.set_ylim(-0.35, 1.15)
+    ax.axis('off')
+    plt.tight_layout()
+
+    plot_bytes = io.BytesIO()
+    # Save the figure as an SVG file
+    plt.savefig(plot_bytes, format='svg', transparent=True)
+    plt.close()
+
+    return plot_bytes.getvalue()
+
 
 def split_number(number):
     number_str = str(number)
@@ -439,9 +517,9 @@ def indoor_temp(y, icon, module):
 def battery(y, name, value):
     d.append(draw.Text(name, 13, 772, y + 4, font_weight="Bold", fill="rgb(50, 50, 50)", stroke_width=0))
    
-    if value <= 4000:
+    if value <= 12:
         color = 'red'
-    elif value <= 4500:
+    elif value <= 18:
         color = 'orange'
     else:
         color = 'green'
@@ -492,13 +570,13 @@ for module in netatmo['devices'][0]['modules']:
 
     if module_name == 'Outdoor Module':
         outdoor_module = module['dashboard_data']
-        outdoor_module['battery'] = module['battery_vp']
+        outdoor_module['battery'] = module['battery_percent']
     elif module_name == 'Indoor 1':
         indoor_module = module['dashboard_data']
-        indoor_module['battery'] = module['battery_vp']
+        indoor_module['battery'] = module['battery_percent']
     elif module_name == 'Rain':
         rain_module = module['dashboard_data']
-        rain_module['battery'] = module['battery_vp']
+        rain_module['battery'] = module['battery_percent']
 
 with sqlite3.connect('weather_display.sqlite') as db:
     hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
@@ -524,7 +602,7 @@ outdoor_temperature(d, outdoor_module)
 pressure = main_module['Pressure']
 pressure_text = f'{pressure:.01f}'
 
-pressure_chart = gauge_chart([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
+pressure_chart = gauge_chart_stepped([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
 d.append(draw.Image(197, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
 
 pressure_trend(d, main_module)
