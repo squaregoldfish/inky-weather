@@ -63,27 +63,34 @@ HUMIDITY_SCALE = [
     {"value": 100, "color": [ 79, 105, 216]}
 ]
 
-PRESSURE_SCALE = [
-    {"value":  970.0, "color": [  0, 255, 255]},
-    {"value":  980.0, "color": [ 50, 255, 255]},
-    {"value":  990.0, "color": [100, 255, 255]},
-    {"value": 1000.0, "color": [200, 255, 200]},
-    {"value": 1010.0, "color": [253, 241,   8]},
-    {"value": 1020.0, "color": [252, 177,   5]},
-    {"value": 1030.0, "color": [255, 128,   3]},
-    {"value": 1040.0, "color": [255,  50,  50]}
+HUMIDITY_SCALE = [
+    {"value":   0, "color": [255,   0,   0]},
+    {"value":  25, "color": [255, 100, 100]},
+    {"value":  50, "color": [100, 100, 255]},
+    {"value":  75, "color": [ 50, 255, 255]},
+    {"value": 100, "color": [  0,   0, 255]}
 ]
 
-CO2_SCALE = [
-    {"value":  400.0, "color": [136, 239, 237]},
-    {"value":  485.7, "color": [ 97, 221, 174]},
-    {"value":  571.4, "color": [124, 200, 108]},
-    {"value":  657.7, "color": [149, 170,  44]},
-    {"value":  742.9, "color": [157, 129,  31]},
-    {"value":  828.6, "color": [153,  93,  50]},
-    {"value":  914.3, "color": [148,  61,  72]},
-    {"value": 1000.0, "color": [144,  27,  99]}
+
+PRESSURE_SCALE = [
+    {"value":  970.00, "color": [ 50, 255, 255]},
+    {"value":  981.66, "color": [100, 255, 255]},
+    {"value":  993.32, "color": [200, 255, 200]},
+    {"value": 1004.98, "color": [253, 241,   8]},
+    {"value": 1016.64, "color": [252, 177,   5]},
+    {"value": 1028.30, "color": [255, 128,   3]},
+    {"value": 1040.00, "color": [255,  50,  50]}
 ]
+
+
+CO2_SCALE = [
+    {"value":  400.0, "color": [0, 0, 255]},
+    {"value":  600.0, "color": [0, 255, 0]},
+    {"value":  800.0, "color": [255,  128,  50]},
+    {"value": 1000.0, "color": [200,  0,  0]},
+    {"value": 1200.0, "color": [255,  0,  0]}
+]
+
 
 RAIN_SCALE = [
     {"value":  0.0, "color": [165, 218, 243]},
@@ -602,7 +609,8 @@ outdoor_temperature(d, outdoor_module)
 pressure = main_module['Pressure']
 pressure_text = f'{pressure:.01f}'
 
-pressure_chart = gauge_chart_stepped([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
+#pressure_chart = gauge_chart_stepped([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
+pressure_chart = gauge_chart([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
 d.append(draw.Image(197, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
 
 pressure_trend(d, main_module)
