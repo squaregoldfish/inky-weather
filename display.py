@@ -15,39 +15,14 @@ import io
 from astral import LocationInfo
 from astral.sun import sun
 
-#MIN_MAX_COLOR = 'rgb(100, 100, 100)'
 MIN_MAX_COLOR = 'black'
 MAX_ARROW_ON = 'rgb(255, 0, 0)'
 MAX_ARROW_OFF = 'rgb(255, 150, 150)'
 MIN_ARROW_ON = 'rgb(0, 0, 255)'
 MIN_ARROW_OFF = 'rgb(150, 150, 255)'
 
-SUNRISE = '#ffc300'
-SUNSET = '#ff8800'
-
-TEMP_SCALE = [
-    {"value":  -4.0, "color": [ 29,  70, 154]},
-    {"value":  -2.0, "color": [ 20,  98, 169]},
-    {"value":   0.0, "color": [ 22, 116, 182]},
-    {"value":   2.0, "color": [ 54, 138, 199]},
-    {"value":   4.0, "color": [ 63, 163, 218]},
-    {"value":   6.0, "color": [ 78, 192, 238]},
-    {"value":   8.0, "color": [174, 220, 216]},
-    {"value":  10.0, "color": [168, 214, 173]},
-    {"value":  12.0, "color": [158, 208, 127]},
-    {"value":  14.0, "color": [174, 211,  82]},
-    {"value":  16.0, "color": [208, 217,  62]},
-    {"value":  18.0, "color": [252, 222,   4]},
-    {"value":  20.0, "color": [251, 203,  12]},
-    {"value":  22.0, "color": [252, 183,  22]},
-    {"value":  24.0, "color": [250, 163,  26]},
-    {"value":  26.0, "color": [246, 138,  31]},
-    {"value":  28.0, "color": [242, 106,  47]},
-    {"value":  30.0, "color": [236,  81,  57]},
-    {"value":  32.0, "color": [237,  42,  42]},
-    {"value":  34.0, "color": [195,  32,  39]},
-    {"value":  36.0, "color": [155,  27,  29]}
-]
+SUNRISE = '#ff9900'
+SUNSET = '#ff2200'
 
 HUMIDITY_SCALE = [
     {"value":   0, "color": [228,  78,  93]},
@@ -66,7 +41,7 @@ HUMIDITY_SCALE = [
 HUMIDITY_SCALE = [
     {"value":   0, "color": [255,   0,   0]},
     {"value":  25, "color": [255, 100, 100]},
-    {"value":  50, "color": [100, 100, 255]},
+    {"value":  50, "color": [100, 255, 255]},
     {"value":  75, "color": [ 50, 255, 255]},
     {"value": 100, "color": [  0,   0, 255]}
 ]
@@ -176,6 +151,8 @@ def gauge_chart(data, unit, scale):
     def val_to_deg(v):
         return 180.0 * (1.0 - (v - min_val) / (max_val - min_val))
 
+    plt.rc('font', family='Lekton', weight='bold', size=10)
+
     fig, ax = plt.subplots(figsize=(6, 3))
     ax.set_aspect('equal')
 
@@ -211,7 +188,7 @@ def gauge_chart(data, unit, scale):
     
     # Labels and text
     ax.text(0, -0.20, label, ha='center', va='center',
-            fontsize=28, fontweight='bold', color='black')
+            fontsize=34, fontweight='bold', color='black')
 
     ax.set_xlim(-1.15, 1.15)
     ax.set_ylim(-0.35, 1.15)
@@ -228,81 +205,6 @@ def gauge_chart(data, unit, scale):
 def rgb_to_hex(rgb):
     return "#{:02X}{:02X}{:02X}".format(*rgb)
 
-def gauge_chart_stepped(data, unit, scale):
-
-    min_val = scale[0]['value']
-    max_val = scale[-1]['value']
-
-    # Convert value to angular position (0° = max, 180° = min)
-    def val_to_deg(v):
-        return 180.0 * (1.0 - (v - min_val) / (max_val - min_val))
-
-    fig, ax = plt.subplots(figsize=(6, 3))
-    ax.set_aspect('equal')
-
-    # Define geometry
-    outer_r = 1.0
-    thickness = 0.30
-    inner_r = outer_r - thickness
-
-    wedge_colors = [rgb_to_hex(p['color']) for p in scale]
-
-    wedge_starts = [scale[0]['value']]
-    wedge_ends = []
-
-    for i in range(len(scale) - 1):
-        t = scale[i]['value']
-        n = scale[i + 1]['value']
-        
-        boundary = t + (n - t) / 2
-        wedge_ends.append(boundary)
-        wedge_starts.append(boundary)
-
-    wedge_ends.append(scale[-1]['value'])
-
-    # Draw each zone as a wedge
-    for i in range(len(wedge_starts)):
-        theta1 = val_to_deg(wedge_ends[i])
-        theta2 = val_to_deg(wedge_starts[i])
-        color = wedge_colors[i]
-
-        wedge = patches.Wedge(center=(0, 0), r=outer_r,
-                               theta1=theta1, theta2=theta2,
-                               width=thickness,
-                               facecolor=color, edgecolor=color, linewidth=1)
-        ax.add_patch(wedge)
-
-    # Draw the needle
-    for needle in data:
-        # Clamp the input value
-        value = max(min_val, min(max_val, needle[0]))
-        
-        angle_deg = val_to_deg(value)
-        angle_rad = np.deg2rad(angle_deg)
-        needle_len = inner_r * 0.9
-        nx, ny = needle_len * np.cos(angle_rad), needle_len * np.sin(angle_rad)
-        ax.plot([0, nx], [0, ny], lw=3.5, color=needle[1], zorder=5)
-        ax.scatter([0], [0], s=120, color=needle[1], zorder=6)
-
-    label = '/'.join([str(n[0]) for n in data]) + unit
-    
-    # Labels and text
-    ax.text(0, -0.20, label, ha='center', va='center',
-            fontsize=28, fontweight='bold', color='black')
-
-    ax.set_xlim(-1.15, 1.15)
-    ax.set_ylim(-0.35, 1.15)
-    ax.axis('off')
-    plt.tight_layout()
-
-    plot_bytes = io.BytesIO()
-    # Save the figure as an SVG file
-    plt.savefig(plot_bytes, format='svg', transparent=True)
-    plt.close()
-
-    return plot_bytes.getvalue()
-
-
 def split_number(number):
     number_str = str(number)
     int_part = str(math.floor(abs(number)))
@@ -318,12 +220,10 @@ def outdoor_temperature(d, module):
     temp = module['Temperature']
     int_part, decimal_part = split_number(temp)    
 
-    #d.append(draw.Rectangle(10, 20, 180, 95, fill=get_color(temp, TEMP_SCALE, 'rgb')))
-
-    d.append(draw.Text(int_part, 105, 140, 105, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
-    d.append(draw.Text('.', 60, 133, 105, font_weight='Bold', fill='black', stroke='black'))
-    d.append(draw.Text(decimal_part, 40, 160, 105, font_weight='Bold', fill='black', stroke='black'))
-    d.append(draw.Text('°C', 28, 150, 50, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text(int_part, 142, 148, 115, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
+    d.append(draw.Text('.', 65, 143, 115, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text(decimal_part, 50, 168, 115, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text('°C', 32, 158, 45, font_weight='Bold', fill='black', stroke='black'))
 
     # Max/Min and trend
     trend = module['temp_trend']
@@ -332,14 +232,14 @@ def outdoor_temperature(d, module):
     max = f'{module["max_temp"]:.1f}'
     max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
 
-    d.append(draw.Lines(195, 35, 205, 20, 215, 35, fill=max_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(max, 17, 195, 54, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Lines(198, 35, 208, 20, 218, 35, fill=max_arrow_color, stroke=None, close='true'))
+    d.append(draw.Text(max, 20, 198, 54, font_weight='Bold', fill=MIN_MAX_COLOR, stroke_width=0))
 
     min = f'{module["min_temp"]:.1f}'
     min_arrow_color = MIN_ARROW_ON if trend == 'down' else MIN_ARROW_OFF
 
-    d.append(draw.Lines(195, 100, 205, 115, 215, 100, fill=min_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(min, 17, 195, 94, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Lines(198, 100, 208, 115, 218, 100, fill=min_arrow_color, stroke=None, close='true'))
+    d.append(draw.Text(min, 20, 198, 95, font_weight='Bold', fill=MIN_MAX_COLOR, stroke_width=0))
 
 def pressure(d, module):
     pressure = module['Pressure']
@@ -388,12 +288,7 @@ def rain(d, module, forecast):
 
     hour_color = 'rgb(118, 199, 236)'
     day_color = '#9999ff'
-    #day_color = 'rgb(74, 153, 210)'
     forecast_color = day_color
-
-    #hour_color = get_color(hour, RAIN_SCALE, 'rgb')
-    #day_color = get_color(day, RAIN_SCALE, 'rgb')
-    #forecast_color = get_color(forecast, RAIN_SCALE, 'rgb')
 
     START = 580
     END = 780
@@ -423,20 +318,6 @@ def rain(d, module, forecast):
             d.append(draw.Text(f'{hour:.1f}', 18, START, 134, font_weight='Bold', fill=hour_color, stroke_width=0, text_anchor='center'))
         d.append(draw.Text(f'{forecast:.1f}', 18, END, 111, font_weight='Bold', font_style='Italic', fill=forecast_color, stroke_width=0, text_anchor='end'))
 
-#def temperature_plot(ax, dates, temps, points, markers):
-#    x = (dates - dates.min()).dt.total_seconds()  # Convert to seconds
-#    y = temps.values
-#    
-#    xnew = np.linspace(x.min(), x.max(), points)
-#    ynew = np.interp(xnew, x, y)
-#    timestamps_new = dates.min() + pd.to_timedelta(xnew, unit='s')
-#    spline_colors = [get_color(y, TEMP_SCALE, 'hex') for y in ynew]
-#
-#    ax.scatter(timestamps_new, ynew, c=spline_colors, s=1 if markers else 8)
-#
-#    if markers:
-#        ax.scatter(dates, temps, color=[get_color(y, TEMP_SCALE, 'hex') for y in temps])
-
 def temperature_plot(ax, dates, temps, markers, color, linewidth):
     ax.plot(dates, temps, color=color, linewidth=linewidth, marker='o', markersize=6 if markers else 0)
 
@@ -448,7 +329,7 @@ def precip_plot(ax, dates, precip, bar_width, min_y):
         ax.set_ylim((0, min_y))
 
 def forecast_plot(d, hourly, daily, sunrise, sunset):
-    plt.rc('font', family='Noto Sans Mono', weight='regular', size=10)
+    plt.rc('font', family='Lekton', weight='bold', size=12)
     fig, axs = plt.subplots(1, 2, figsize=(8, 2.75))
 
     plot_hour = axs[0]
@@ -507,29 +388,23 @@ def indoor_temp(y, icon, module):
 
     int_part, decimal_part = split_number(temperature)
 
-    #temperature_color = get_color(temperature, TEMP_SCALE, 'rgb')
     temperature_color='black'
     
-    d.append(draw.Text(int_part, 25, 105, y, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text('.', 25, 103, y, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text(decimal_part, 25, 115, y, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text('°', 25, 130, y, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text('C', 25, 142, y, font_weight='Bold', fill=temperature_color, stroke_width=0))
-
- #   d.append(draw.Text(f'{module["Humidity"]}%', 25, 239, y, font_weight='Bold', fill=get_color(humidity, HUMIDITY_SCALE, 'rgb'), stroke_width=0, text_anchor='end'))
-
- #   co2_color = get_color(co2, CO2_SCALE, 'rgb')
- #   d.append(draw.Text(f'{co2}ppm', 25, 360, y, font_weight='Bold', fill=co2_color, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(int_part, 31, 100, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text('.', 25, 99, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+    d.append(draw.Text(decimal_part, 25, 110, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+    d.append(draw.Text('°', 25, 125, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+    d.append(draw.Text('C', 25, 137, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
 
 def battery(y, name, value):
-    d.append(draw.Text(name, 13, 772, y + 4, font_weight="Bold", fill="rgb(50, 50, 50)", stroke_width=0))
+    d.append(draw.Text(name, 15, 771, y + 4, font_weight="Bold", fill="rgb(50, 50, 50)", stroke_width=0))
    
     if value <= 12:
-        color = 'red'
+        color = 'rgb(255, 0, 0)'
     elif value <= 18:
-        color = 'orange'
+        color = 'rgb(255, 128, 0)'
     else:
-        color = 'green'
+        color = 'rgb(0, 255, 0)'
 
     d.append(draw.Circle(790, y, 6, stroke_width=0, fill=color))
 
@@ -550,14 +425,14 @@ def get_sun(position, timezone):
 
 def sun_info(d, sunrise, sunset):
     d.append(draw.Image(550, 402, 45, 45, 'sunrise.svg', embed=True))
-    d.append(draw.Text(sunrise.strftime("%H"), 25, 637, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 25, 635, 430, font_weight='Bold', fill=SUNRISE, stroke_width=0))
-    d.append(draw.Text(sunrise.strftime("%M"), 25, 648, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Text(sunrise.strftime("%H"), 35, 642, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 35, 640, 430, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Text(sunrise.strftime("%M"), 35, 653, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0))
 
     d.append(draw.Image(550, 442, 45, 45, 'sunset.svg', embed=True))
-    d.append(draw.Text(sunset.strftime("%H"), 25, 637, 470, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 25, 635, 468, font_weight='Bold', fill=SUNSET, stroke_width=0))
-    d.append(draw.Text(sunset.strftime("%M"), 25, 648, 470, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Text(sunset.strftime("%H"), 35, 642, 470, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 35, 640, 468, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Text(sunset.strftime("%M"), 35, 653, 470, font_weight='Bold', fill=SUNSET, stroke_width=0))
 
 
 # Load Data
@@ -598,7 +473,7 @@ today_forecast = daily.iloc[0]
 daily = daily[1:6].copy()
 
 # Canvas
-d = draw.Drawing(800, 480, origin=(0, 0), font_family='Noto Sans Mono')
+d = draw.Drawing(800, 480, origin=(0, 0), font_family='Lekton')
 r = draw.Rectangle(0, 0, 800, 480, fill="white", stroke=None)
 d.append(r)
 
@@ -609,7 +484,6 @@ outdoor_temperature(d, outdoor_module)
 pressure = main_module['Pressure']
 pressure_text = f'{pressure:.01f}'
 
-#pressure_chart = gauge_chart_stepped([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
 pressure_chart = gauge_chart([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
 d.append(draw.Image(197, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
 
@@ -621,8 +495,6 @@ humidity_text = f'{humidity}%'
 humidity_chart = gauge_chart([(humidity, '#2F4F4F')], '%', HUMIDITY_SCALE)
 d.append(draw.Image(360, -85, 250, 250, data=humidity_chart, mime_type='image/svg+xml', embed=True))
 
-#pressure(d, main_module)
-#humidity(d, outdoor_module)
 rain(d, rain_module, today_forecast['precipitation_sum'])
 forecast_plot(d, hourly, daily, sunrise, sunset)
 
@@ -658,8 +530,8 @@ sun_info(d, sunrise, sunset)
 
 battery(436, 'O', outdoor_module['battery'])
 battery(453, 'R', rain_module['battery'])
-battery(470, 'L', indoor_module['battery'])
+battery(470, 'I', indoor_module['battery'])
 
-d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 11, 800, 10, font_weight='Regular', fill='black', stroke_width=0, text_anchor='end'))
+d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 800, 10, font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
 
 d.save_png("display.png")
