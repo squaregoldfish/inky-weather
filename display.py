@@ -181,14 +181,31 @@ def gauge_chart(data, unit, scale):
         angle_rad = np.deg2rad(angle_deg)
         needle_len = inner_r * 0.9
         nx, ny = needle_len * np.cos(angle_rad), needle_len * np.sin(angle_rad)
-        ax.plot([0, nx], [0, ny], lw=3.5, color=needle[1], zorder=5)
+        ax.plot([0, nx], [0, ny], lw=5, color=needle[1], zorder=5)
         ax.scatter([0], [0], s=120, color=needle[1], zorder=6)
 
-    label = '/'.join([str(n[0]) for n in data]) + unit
-    
-    # Labels and text
-    ax.text(0, -0.20, label, ha='center', va='center',
-            fontsize=34, fontweight='bold', color='black')
+    if len(data) == 1:
+        label = '/'.join([str(n[0]) for n in data]) + unit
+        ax.text(0, -0.20, label, ha='center', va='center',
+                fontsize=34, fontweight='bold', color='black')
+    else:
+        # Unit
+        ax.text(0, -0.20, unit, ha='center', va='center',
+                fontsize=40, fontweight='bold', color='black')
+
+        if data[0][0] < data[1][0]:
+            label1_src = 0
+            label2_src = 1
+        else:
+            label1_src = 1
+            label2_src = 0
+
+        ax.text(-1, -0.20, data[label1_src][0], ha='left', va='center',
+                fontsize=40, fontweight='bold', color=data[label1_src][1])
+        ax.text(1, -0.20, data[label2_src][0], ha='right', va='center',
+                fontsize=40, fontweight='bold', color=data[label2_src][1])
+        
+
 
     ax.set_xlim(-1.15, 1.15)
     ax.set_ylim(-0.35, 1.15)
@@ -504,8 +521,8 @@ indoor_temp(468, config['display']['main_module_icon'], main_module)
 indoor_humidity = indoor_module['Humidity']
 main_humidity = main_module['Humidity']
 
-INDOOR_COLOR = '#F18219'
-MAIN_COLOR = '#0B70B8'
+INDOOR_COLOR = '#008800'
+MAIN_COLOR = '#FF0000'
 
 humidity_data = [
     (indoor_humidity, INDOOR_COLOR),
