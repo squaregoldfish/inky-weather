@@ -211,5 +211,7 @@ netatmo_token.json
 weather_display.sqlite
 .cache.sqlite
 netatmo_weather.json
+output
 
 nohup.out
+
