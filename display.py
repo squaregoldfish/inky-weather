@@ -151,7 +151,7 @@ def gauge_chart(data, unit, scale):
     def val_to_deg(v):
         return 180.0 * (1.0 - (v - min_val) / (max_val - min_val))
 
-    plt.rc('font', family='Lekton', weight='bold', size=10)
+    plt.rc('font', family='Roboto Mono', weight='regular', size=10)
 
     fig, ax = plt.subplots(figsize=(6, 3))
     ax.set_aspect('equal')
@@ -187,11 +187,11 @@ def gauge_chart(data, unit, scale):
     if len(data) == 1:
         label = '/'.join([str(n[0]) for n in data]) + unit
         ax.text(0, -0.20, label, ha='center', va='center',
-                fontsize=34, fontweight='bold', color='black')
+                fontsize=32, fontweight='regular', color='black')
     else:
         # Unit
         ax.text(0, -0.20, unit, ha='center', va='center',
-                fontsize=40, fontweight='bold', color='black')
+                fontsize=38, fontweight='regular', color='black')
 
         if data[0][0] < data[1][0]:
             label1_src = 0
@@ -200,10 +200,10 @@ def gauge_chart(data, unit, scale):
             label1_src = 1
             label2_src = 0
 
-        ax.text(-1, -0.20, data[label1_src][0], ha='left', va='center',
-                fontsize=40, fontweight='bold', color=data[label1_src][1])
-        ax.text(1, -0.20, data[label2_src][0], ha='right', va='center',
-                fontsize=40, fontweight='bold', color=data[label2_src][1])
+        ax.text(-1.03, -0.20, data[label1_src][0], ha='left', va='center',
+                fontsize=38, fontweight='regular', color=data[label1_src][1])
+        ax.text(1.04, -0.20, data[label2_src][0], ha='right', va='center',
+                fontsize=38, fontweight='regular', color=data[label2_src][1])
         
 
 
@@ -237,10 +237,10 @@ def outdoor_temperature(d, module):
     temp = module['Temperature']
     int_part, decimal_part = split_number(temp)    
 
-    d.append(draw.Text(int_part, 142, 148, 115, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
-    d.append(draw.Text('.', 65, 143, 115, font_weight='Bold', fill='black', stroke='black'))
-    d.append(draw.Text(decimal_part, 50, 168, 115, font_weight='Bold', fill='black', stroke='black'))
-    d.append(draw.Text('°C', 32, 158, 45, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text(int_part, 122, 148, 115, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
+    d.append(draw.Text('.', 55, 143, 115, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text(decimal_part, 43, 168, 115, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text('°C', 30, 154, 47, font_weight='Bold', fill='black', stroke='black'))
 
     # Max/Min and trend
     trend = module['temp_trend']
@@ -249,14 +249,14 @@ def outdoor_temperature(d, module):
     max = f'{module["max_temp"]:.1f}'
     max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
 
-    d.append(draw.Lines(198, 35, 208, 20, 218, 35, fill=max_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(max, 20, 198, 54, font_weight='Bold', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Lines(198, 38, 208, 23, 218, 38, fill=max_arrow_color, stroke=None, close='true'))
+    d.append(draw.Text(max, 20, 198, 57, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
 
     min = f'{module["min_temp"]:.1f}'
     min_arrow_color = MIN_ARROW_ON if trend == 'down' else MIN_ARROW_OFF
 
-    d.append(draw.Lines(198, 100, 208, 115, 218, 100, fill=min_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(min, 20, 198, 95, font_weight='Bold', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Lines(198, 103, 208, 117, 218, 103, fill=min_arrow_color, stroke=None, close='true'))
+    d.append(draw.Text(min, 20, 198, 98, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
 
 def pressure(d, module):
     pressure = module['Pressure']
@@ -346,7 +346,7 @@ def precip_plot(ax, dates, precip, bar_width, min_y):
         ax.set_ylim((0, min_y))
 
 def forecast_plot(d, hourly, daily, sunrise, sunset):
-    plt.rc('font', family='Lekton', weight='bold', size=12)
+    plt.rc('font', family='Roboto Mono', weight='regular', size=10)
     fig, axs = plt.subplots(1, 2, figsize=(8, 2.75))
 
     plot_hour = axs[0]
@@ -406,15 +406,15 @@ def indoor_temp(y, icon, module):
     int_part, decimal_part = split_number(temperature)
 
     temperature_color='black'
-    
-    d.append(draw.Text(int_part, 31, 100, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text('.', 25, 99, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text(decimal_part, 25, 110, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text('°', 25, 125, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text('C', 25, 137, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+
+    d.append(draw.Text(int_part, 28, 98, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text('.', 23, 96, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+    d.append(draw.Text(decimal_part, 23, 107, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+    d.append(draw.Text('°', 23, 121, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+    d.append(draw.Text('C', 23, 133, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
 
 def battery(y, name, value):
-    d.append(draw.Text(name, 15, 771, y + 4, font_weight="Bold", fill="rgb(50, 50, 50)", stroke_width=0))
+    d.append(draw.Text(name, 14, 771, y + 5, font_weight="Regular", fill="rgb(50, 50, 50)", stroke_width=0))
    
     if value <= 12:
         color = 'rgb(255, 0, 0)'
@@ -441,15 +441,15 @@ def get_sun(position, timezone):
     return(sunrise, sunset)
 
 def sun_info(d, sunrise, sunset):
-    d.append(draw.Image(550, 402, 45, 45, 'sunrise.svg', embed=True))
-    d.append(draw.Text(sunrise.strftime("%H"), 35, 642, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 35, 640, 430, font_weight='Bold', fill=SUNRISE, stroke_width=0))
-    d.append(draw.Text(sunrise.strftime("%M"), 35, 653, 432, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Image(540, 402, 45, 45, 'sunrise.svg', embed=True))
+    d.append(draw.Text(sunrise.strftime("%H"), 35, 632, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 35, 629, 431, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Text(sunrise.strftime("%M"), 35, 645, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0))
 
-    d.append(draw.Image(550, 442, 45, 45, 'sunset.svg', embed=True))
-    d.append(draw.Text(sunset.strftime("%H"), 35, 642, 470, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 35, 640, 468, font_weight='Bold', fill=SUNSET, stroke_width=0))
-    d.append(draw.Text(sunset.strftime("%M"), 35, 653, 470, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Image(540, 442, 45, 45, 'sunset.svg', embed=True))
+    d.append(draw.Text(sunset.strftime("%H"), 35, 632, 471, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 35, 629, 469, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Text(sunset.strftime("%M"), 35, 645, 471, font_weight='Bold', fill=SUNSET, stroke_width=0))
 
 
 # Load Data
@@ -490,7 +490,7 @@ today_forecast = daily.iloc[0]
 daily = daily[1:6].copy()
 
 # Canvas
-d = draw.Drawing(800, 480, origin=(0, 0), font_family='Lekton')
+d = draw.Drawing(800, 480, origin=(0, 0), font_family='Roboto Mono')
 r = draw.Rectangle(0, 0, 800, 480, fill="white", stroke=None)
 d.append(r)
 
@@ -502,7 +502,7 @@ pressure = main_module['Pressure']
 pressure_text = f'{pressure:.01f}'
 
 pressure_chart = gauge_chart([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
-d.append(draw.Image(197, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
+d.append(draw.Image(202, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
 
 pressure_trend(d, main_module)
 
@@ -521,7 +521,7 @@ indoor_temp(468, config['display']['main_module_icon'], main_module)
 indoor_humidity = indoor_module['Humidity']
 main_humidity = main_module['Humidity']
 
-INDOOR_COLOR = '#008800'
+INDOOR_COLOR = '#00FF00'
 MAIN_COLOR = '#FF0000'
 
 humidity_data = [
@@ -530,7 +530,7 @@ humidity_data = [
 ]
 
 indoor_humidity_chart = gauge_chart(humidity_data, '%', HUMIDITY_SCALE)
-d.append(draw.Image(140, 320, 200, 200, data=indoor_humidity_chart, mime_type='image/svg+xml', embed=True))
+d.append(draw.Image(133, 320, 200, 200, data=indoor_humidity_chart, mime_type='image/svg+xml', embed=True))
 
 indoor_co2 = indoor_module['CO2']
 main_co2 = main_module['CO2']
@@ -541,7 +541,7 @@ co2_data = [
 ]
 
 co2_chart = gauge_chart(co2_data, 'ppm', CO2_SCALE)
-d.append(draw.Image(285, 320, 200, 200, data=co2_chart, mime_type='image/svg+xml', embed=True))
+d.append(draw.Image(270, 320, 200, 200, data=co2_chart, mime_type='image/svg+xml', embed=True))
 
 sun_info(d, sunrise, sunset)
 
@@ -549,6 +549,6 @@ battery(436, 'O', outdoor_module['battery'])
 battery(453, 'R', rain_module['battery'])
 battery(470, 'I', indoor_module['battery'])
 
-d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 800, 10, font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
+d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12, font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
 
 d.save_png("display.png")
