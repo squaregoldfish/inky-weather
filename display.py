@@ -1,19 +1,20 @@
-import json
-import toml
-import sqlite3
-import pandas as pd
-import numpy as np
-import drawsvg as draw
-import math
-from datetime import datetime, date, timedelta
-import pytz
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.dates as mdates
-from matplotlib.ticker import MultipleLocator
-import io
 from astral import LocationInfo
 from astral.sun import sun
+from datetime import datetime, date, timedelta
+import drawsvg as draw
+import io
+import json
+import math
+import matplotlib.dates as mdates
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
+import numpy as np
+import pandas as pd
+import pytz
+import sqlite3
+import time
+import toml
 
 MIN_MAX_COLOR = 'black'
 MAX_ARROW_ON = 'rgb(255, 0, 0)'
@@ -21,8 +22,13 @@ MAX_ARROW_OFF = 'rgb(255, 150, 150)'
 MIN_ARROW_ON = 'rgb(0, 0, 255)'
 MIN_ARROW_OFF = 'rgb(150, 150, 255)'
 
+INDOOR_COLOR = '#00FF00'
+MAIN_COLOR = '#FF0000'
+
 SUNRISE = '#ff9900'
 SUNSET = '#ff2200'
+
+FONT = 'Roboto Mono'
 
 HUMIDITY_SCALE = [
     {"value":   0, "color": [228,  78,  93]},
@@ -151,7 +157,7 @@ def gauge_chart(data, unit, scale):
     def val_to_deg(v):
         return 180.0 * (1.0 - (v - min_val) / (max_val - min_val))
 
-    plt.rc('font', family='Roboto Mono', weight='regular', size=10)
+    plt.rc('font', family=FONT, weight='regular', size=10)
 
     fig, ax = plt.subplots(figsize=(6, 3))
     ax.set_aspect('equal')
@@ -345,56 +351,6 @@ def precip_plot(ax, dates, precip, bar_width, min_y):
     elif (precip <= min_y).all():
         ax.set_ylim((0, min_y))
 
-def forecast_plot(d, hourly, daily, sunrise, sunset):
-    plt.rc('font', family='Roboto Mono', weight='regular', size=10)
-    fig, axs = plt.subplots(1, 2, figsize=(8, 2.75))
-
-    plot_hour = axs[0]
-    temperature_plot(plot_hour, hourly['date'], hourly['temperature_2m'], False, 'black', 3)
-
-    range = max(hourly['temperature_2m']) - min(hourly['temperature_2m'])
-    if range < 5:
-        midpoint = min(hourly['temperature_2m']) + (range / 2)
-        plot_hour.set_ylim([midpoint - 2.5, midpoint + 2.5])
-
-
-    precip_hour = plot_hour.twinx()
-    plot_hour.set_zorder(precip_hour.get_zorder()+1)
-    plot_hour.patch.set_visible(False)
-
-    precip_plot(precip_hour, hourly['date'], hourly['precipitation'], 0.025, 0.5)
-
-    precip_hour.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
-    precip_hour.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
-
-    plot_hour.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=cet))
-
-    plot_day = axs[1]
-    temperature_plot(plot_day, daily['date'], daily['temperature_2m_min'], True, 'blue', 2)
-    temperature_plot(plot_day, daily['date'], daily['temperature_2m_max'], True, 'red', 2)
-
-    range = max(daily['temperature_2m_max']) - min(daily['temperature_2m_min'])
-    if range < 5:
-        midpoint = min(daily['temperature_2m_min']) + (range / 2)
-        plot_day.set_ylim([midpoint - 2.5, midpoint + 2.5])
-
-    precip_day = plot_day.twinx()
-    plot_day.set_zorder(precip_day.get_zorder()+1)
-    plot_day.patch.set_visible(False)
-
-    precip_plot(precip_day, daily['date'], daily['precipitation_sum'], 0.5, 5)
-    plot_day.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=cet))
-    plot_day.xaxis.set_major_locator(MultipleLocator(1))
-
-    plt.tight_layout()
-
-    plot_bytes = io.BytesIO()
-    # Save the figure as an SVG file
-    plt.savefig(plot_bytes, format='svg', transparent=True)
-    plt.close()
-
-    d.append(draw.Image(0, 125, 800, 275, data=plot_bytes.getvalue(), mime_type='image/svg+xml', embed=True))
-
 def indoor_temp(y, icon, module):
     
     temperature = module['Temperature']
@@ -452,103 +408,186 @@ def sun_info(d, sunrise, sunset):
     d.append(draw.Text(sunset.strftime("%M"), 35, 645, 471, font_weight='Bold', fill=SUNSET, stroke_width=0))
 
 
-# Load Data
-with open('netatmo_weather.json') as nin:
-    netatmo = json.load(nin)
+def draw_netatmo_outdoor(config, canvas, outdoor_module, bedroom_module):
+    # Temperature
+    outdoor_temperature(canvas, outdoor_module)
 
+    # Pressure
+    pressure = bedroom_module['Pressure']
+    pressure_text = f'{pressure:.01f}'
+    pressure_chart = gauge_chart([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
+    canvas.append(draw.Image(202, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
+    pressure_trend(d, bedroom_module)
+
+    # Humidity
+    humidity = outdoor_module['Humidity']
+    humidity_text = f'{humidity}%'
+    humidity_chart = gauge_chart([(humidity, '#2F4F4F')], '%', HUMIDITY_SCALE)
+    canvas.append(draw.Image(360, -85, 250, 250, data=humidity_chart, mime_type='image/svg+xml', embed=True))
+
+def draw_netatmo_indoor(config, canvas, living_room, bedroom):
+    indoor_temp(433, 'sofa.svg', living_room)
+    indoor_temp(468, 'bed.svg', bedroom)
+
+    indoor_humidity = living_room['Humidity']
+    main_humidity = bedroom['Humidity']
+
+    humidity_data = [
+        (indoor_humidity, INDOOR_COLOR),
+        (main_humidity, MAIN_COLOR)
+    ]
+
+    indoor_humidity_chart = gauge_chart(humidity_data, '%', HUMIDITY_SCALE)
+    d.append(draw.Image(133, 320, 200, 200, data=indoor_humidity_chart, mime_type='image/svg+xml', embed=True))
+
+    indoor_co2 = living_room_module['CO2']
+    main_co2 = bedroom_module['CO2']
+
+    co2_data = [
+        (indoor_co2, INDOOR_COLOR),
+        (main_co2, MAIN_COLOR)
+    ]
+
+    co2_chart = gauge_chart(co2_data, 'ppm', CO2_SCALE)
+    d.append(draw.Image(270, 320, 200, 200, data=co2_chart, mime_type='image/svg+xml', embed=True))
+
+def hourly_forecast(canvas, forecast, sunrise, sunset):
+    plt.rc('font', family=FONT, weight='regular', size=10)
+    fig, ax = plt.subplots(figsize=(4, 2.75))
+
+    temperature_plot(ax, forecast['date'], forecast['temperature_2m'], False, 'black', 3)
+
+    range = max(forecast['temperature_2m']) - min(forecast['temperature_2m'])
+    if range < 5:
+        midpoint = min(forecast['temperature_2m']) + (range / 2)
+        ax.set_ylim([midpoint - 2.5, midpoint + 2.5])
+
+    precip_hour = ax.twinx()
+    ax.set_zorder(precip_hour.get_zorder()+1)
+    ax.patch.set_visible(False)
+
+    precip_plot(precip_hour, forecast['date'], forecast['precipitation'], 0.025, 0.5)
+
+    precip_hour.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
+    precip_hour.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=cet))
+
+    plt.tight_layout()
+    plot_bytes = io.BytesIO()
+    # Save the figure as an SVG file
+    plt.savefig(plot_bytes, format='svg', transparent=True)
+    plt.close()
+
+    canvas.append(draw.Image(0, 125, 400, 275, data=plot_bytes.getvalue(), mime_type='image/svg+xml', embed=True))
+
+def daily_forecast(canvas, forecast):
+    plt.rc('font', family=FONT, weight='regular', size=10)
+    fig, ax = plt.subplots(figsize=(4, 2.75))
+
+    temperature_plot(ax, forecast['date'], forecast['temperature_2m_min'], True, 'blue', 2)
+    temperature_plot(ax, forecast['date'], forecast['temperature_2m_max'], True, 'red', 2)
+
+    range = max(daily['temperature_2m_max']) - min(daily['temperature_2m_min'])
+    if range < 5:
+        midpoint = min(forecast['temperature_2m_min']) + (range / 2)
+        ax.set_ylim([midpoint - 2.5, midpoint + 2.5])
+
+    precip_day = ax.twinx()
+    ax.set_zorder(precip_day.get_zorder()+1)
+    ax.patch.set_visible(False)
+
+    precip_plot(precip_day, forecast['date'], forecast['precipitation_sum'], 0.5, 5)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=cet))
+    ax.xaxis.set_major_locator(MultipleLocator(1))
+
+    plt.tight_layout()
+    plot_bytes = io.BytesIO()
+    # Save the figure as an SVG file
+    plt.savefig(plot_bytes, format='svg', transparent=True)
+    plt.close()
+
+    canvas.append(draw.Image(400, 125, 400, 275, data=plot_bytes.getvalue(), mime_type='image/svg+xml', embed=True))
+
+# Load Config
 with open('config.toml') as cin:
     config = toml.loads(cin.read())
 
-main_module = netatmo['devices'][0]['dashboard_data']
-outdoor_module = None
-indoor_module = None
-rain_module = None
+while True:
+    # Load Netatmo Data
+    with open('netatmo_weather.json') as nin:
+        netatmo = json.load(nin)
 
-for module in netatmo['devices'][0]['modules']:
-    module_name = module['module_name']
+    bedroom_module = netatmo['devices'][0]['dashboard_data']
+    outdoor_module = None
+    living_room_module = None
+    rain_module = None
 
-    if module_name == 'Outdoor Module':
-        outdoor_module = module['dashboard_data']
-        outdoor_module['battery'] = module['battery_percent']
-    elif module_name == 'Indoor 1':
-        indoor_module = module['dashboard_data']
-        indoor_module['battery'] = module['battery_percent']
-    elif module_name == 'Rain':
-        rain_module = module['dashboard_data']
-        rain_module['battery'] = module['battery_percent']
+    for module in netatmo['devices'][0]['modules']:
+        module_name = module['module_name']
 
-with sqlite3.connect('weather_display.sqlite') as db:
-    hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
-    daily = pd.read_sql('SELECT * FROM open_meteo_daily', db, parse_dates='date')
+        if module_name == 'Outdoor Module':
+            outdoor_module = module['dashboard_data']
+            outdoor_module['battery'] = module['battery_percent']
+        elif module_name == 'Indoor 1':
+            living_room_module = module['dashboard_data']
+            living_room_module['battery'] = module['battery_percent']
+        elif module_name == 'Rain':
+            rain_module = module['dashboard_data']
+            rain_module['battery'] = module['battery_percent']
 
-cet = pytz.timezone('Europe/Brussels')
-current_hour = datetime.now(cet).replace(minute=0, second=0, microsecond=0)
-plus_24_hours = current_hour + pd.Timedelta(hours=24)
-hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= plus_24_hours)].copy()
+    # Load and setup meteo forecast
+    with sqlite3.connect('weather_display.sqlite') as db:
+        hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
+        daily = pd.read_sql('SELECT * FROM open_meteo_daily', db, parse_dates='date')
 
-today_forecast = daily.iloc[0]
-daily = daily[1:6].copy()
+    cet = pytz.timezone('Europe/Brussels')
+    current_hour = datetime.now(cet).replace(minute=0, second=0, microsecond=0)
+    plus_24_hours = current_hour + pd.Timedelta(hours=24)
+    hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= plus_24_hours)].copy()
 
-# Canvas
-d = draw.Drawing(800, 480, origin=(0, 0), font_family='Roboto Mono')
-r = draw.Rectangle(0, 0, 800, 480, fill="white", stroke=None)
-d.append(r)
+    today_forecast = daily.iloc[0]
+    daily = daily[1:6].copy()
 
-sunrise, sunset = get_sun(config['location'], cet)
+    # Sun info
+    sunrise, sunset = get_sun(config['location'], cet)
 
-outdoor_temperature(d, outdoor_module)
 
-pressure = main_module['Pressure']
-pressure_text = f'{pressure:.01f}'
+    # Prepare canvas
+    d = draw.Drawing(800, 480, origin=(0, 0), font_family=FONT)
+    r = draw.Rectangle(0, 0, 800, 480, fill="white", stroke=None)
+    d.append(r)
 
-pressure_chart = gauge_chart([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
-d.append(draw.Image(202, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
+    # Timestamp
+    d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12, font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
 
-pressure_trend(d, main_module)
+    # Draw basic Netatmo stuff (no rain)
+    draw_netatmo_outdoor(config, d, outdoor_module, bedroom_module)
+    draw_netatmo_indoor(config, d, bedroom_module, living_room_module)
 
-humidity = outdoor_module['Humidity']
-humidity_text = f'{humidity}%'
+    # Netatmo Battery Status
+    battery(436, 'O', outdoor_module['battery'])
+    battery(453, 'R', rain_module['battery'])
+    battery(470, 'I', living_room_module['battery'])
 
-humidity_chart = gauge_chart([(humidity, '#2F4F4F')], '%', HUMIDITY_SCALE)
-d.append(draw.Image(360, -85, 250, 250, data=humidity_chart, mime_type='image/svg+xml', embed=True))
 
-rain(d, rain_module, today_forecast['precipitation_sum'])
-forecast_plot(d, hourly, daily, sunrise, sunset)
+    # Hourly forecast plot
+    hourly_forecast(d, hourly, sunrise, sunset)
 
-indoor_temp(433, config['display']['indoor_module_icon'], indoor_module)
-indoor_temp(468, config['display']['main_module_icon'], main_module)
+    # Daily forecast plot
+    daily_forecast(d, daily)
 
-indoor_humidity = indoor_module['Humidity']
-main_humidity = main_module['Humidity']
+    # Rain info
+    rain(d, rain_module, today_forecast['precipitation_sum'])
 
-INDOOR_COLOR = '#00FF00'
-MAIN_COLOR = '#FF0000'
+    # Sun info
+    sun_info(d, sunrise, sunset)
 
-humidity_data = [
-    (indoor_humidity, INDOOR_COLOR),
-    (main_humidity, MAIN_COLOR)
-]
+    # Save the final image
+    d.save_png("display.png")
 
-indoor_humidity_chart = gauge_chart(humidity_data, '%', HUMIDITY_SCALE)
-d.append(draw.Image(133, 320, 200, 200, data=indoor_humidity_chart, mime_type='image/svg+xml', embed=True))
+    exit()
 
-indoor_co2 = indoor_module['CO2']
-main_co2 = main_module['CO2']
+    time.sleep(900)
 
-co2_data = [
-    (indoor_co2, INDOOR_COLOR),
-    (main_co2, MAIN_COLOR)
-]
 
-co2_chart = gauge_chart(co2_data, 'ppm', CO2_SCALE)
-d.append(draw.Image(270, 320, 200, 200, data=co2_chart, mime_type='image/svg+xml', embed=True))
-
-sun_info(d, sunrise, sunset)
-
-battery(436, 'O', outdoor_module['battery'])
-battery(453, 'R', rain_module['battery'])
-battery(470, 'I', indoor_module['battery'])
-
-d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12, font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
-
-d.save_png("display.png")
