@@ -14,6 +14,9 @@ BLUR = 1
 SNOW = 1
 ZOOM = 7
 
+MAP_WIDTH = 2
+MAP_HEIGHT = 0.73
+
 def lonlat_to_tile(lon, lat, z):
     n = 2.0 ** z
     xtile = int((lon + 180.0) / 360.0 * n)
@@ -45,9 +48,6 @@ with open('config.toml') as cin:
 
 point_lon = config['location']['longitude']
 point_lat = config['location']['latitude']
-
-MAP_WIDTH = 2
-MAP_HEIGHT = 0.75
 
 min_lon = point_lon - (MAP_WIDTH / 2)
 max_lon = point_lon + (MAP_WIDTH / 2)
@@ -84,8 +84,9 @@ for x in range(x_min, x_max + 1):
                   transform=ccrs.PlateCarree(), zorder=5, interpolation='nearest')
 
 
-ax.plot(point_lon, point_lat, 'ro', transform=ccrs.PlateCarree(), zorder=10)
+ax.plot(point_lon, point_lat, 'ro', markersize=8, transform=ccrs.PlateCarree(), zorder=10)
+ax.plot(2.939751, 51.23239, 'ro', markersize=5, transform=ccrs.PlateCarree(), zorder=10)
 
 plt.tight_layout()
-plt.savefig('rain_map.png')
+plt.savefig('rain_map.png', bbox_inches='tight', pad_inches=0.02)
 

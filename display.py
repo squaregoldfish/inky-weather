@@ -1,5 +1,7 @@
 from astral import LocationInfo
 from astral.sun import sun
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 from datetime import datetime, date, timedelta
 import drawsvg as draw
 import io
@@ -177,7 +179,6 @@ def gauge_chart(data, unit, scale):
                               facecolor=color, edgecolor=color, linewidth=1)
         ax.add_patch(wedge)
 
-    
     # Draw the needle
     for needle in data:
         # Clamp the input value
@@ -574,7 +575,11 @@ while True:
     hourly_forecast(d, hourly, sunrise, sunset)
 
     # Daily forecast plot
-    daily_forecast(d, daily)
+    #daily_forecast(d, daily)
+
+    # Rain map
+    d.append(draw.Image(415, 143, 374, 218, 'rain_map.png', embed=True))
+
 
     # Rain info
     rain(d, rain_module, today_forecast['precipitation_sum'])
