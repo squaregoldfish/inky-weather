@@ -212,6 +212,7 @@ weather_display.sqlite
 .cache.sqlite
 netatmo_weather.json
 output
+*png
 
 nohup.out
 
