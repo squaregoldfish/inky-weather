@@ -1,0 +1,89 @@
+from cartopy import crs as ccrs
+import cartopy.feature as cfeature
+import contextily as ctx
+import geopandas as gpd
+import json
+import matplotlib.pyplot as plt
+import requests
+from shapely.geometry import box
+import toml
+from xyzservices import TileProvider
+import xyzservices.providers as xyz
+import math
+import numpy as np
+import xarray as xr
+from scipy.ndimage import gaussian_filter
+
+
+API_URL = 'https://api.rainviewer.com/public/weather-maps.json'
+BLUR = 0
+SNOW = 1
+ZOOM = 'auto'
+
+MAP_WIDTH = 22
+MAP_HEIGHT = 8.2
+
+PROJECTION = ccrs.Mercator()
+
+with open('config.toml') as cin:
+    config = toml.loads(cin.read())
+
+point_lon = config['location']['longitude']
+point_lat = config['location']['latitude']
+
+min_lon = point_lon - (MAP_WIDTH / 2)
+max_lon = point_lon + (MAP_WIDTH / 2)
+min_lat = point_lat - (MAP_HEIGHT / 2)
+max_lat = point_lat + (MAP_HEIGHT / 2)
+
+# Define the bounding box
+bbox = (min_lon, min_lat, max_lon, max_lat)
+
+radar_response = requests.get(API_URL)
+radar_json = json.loads(radar_response.content)
+tile_host = radar_json['host']
+tile_path = radar_json['radar']['past'][-1]['path']
+
+tile_base = f'{tile_host}{tile_path}/256/{{z}}/{{x}}/{{y}}/2/{BLUR}_{SNOW}.png'
+
+# Define the XYZ Tile Provider
+tile_provider = TileProvider({
+    "url": tile_base,
+    "name": "",
+    "attribution": "",
+    "cross_origin": "Anonymous"}
+)
+
+fig_ratio = 480 / 800
+figsize_x = 10.26
+figsize_y = figsize_x * fig_ratio
+
+# Create a map with PlateCarree projection
+fig, ax = plt.subplots(figsize=[figsize_x, figsize_y], subplot_kw={'projection': PROJECTION})
+ax.set_extent([bbox[0], bbox[2], bbox[1], bbox[3]], ccrs.PlateCarree())
+
+# Rain radar
+ctx.add_basemap(ax, source=tile_provider, zoom=ZOOM, crs=PROJECTION, zorder=10)
+
+# Countries and coasts
+ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '10m', linewidth=0.5, ec='#888888', fc='#f3fff3'))
+
+# Pressure
+pressure = xr.load_dataset('pressure.grib2')['msl'] / 100
+smoothed_pressure = gaussian_filter(pressure.values, sigma=1)
+
+clevs = range(940, 1050, 4)
+cs = ax.contour(pressure.longitude, pressure.latitude, smoothed_pressure, levels=clevs, 
+                colors='#000000', linewidths=1, zorder=9, transform=ccrs.PlateCarree())
+ax.clabel(cs, inline=True, fontsize=8)
+
+# Points of interest
+ax.plot(point_lon, point_lat, 'ro', markersize=7, transform=ccrs.PlateCarree(), zorder=50)
+ax.plot(1.484565, 52.544083, 'ro', markersize=5.5, transform=ccrs.PlateCarree(), zorder=50)
+ax.plot(0.465837, 52.796555, 'ro', markersize=5.5, transform=ccrs.PlateCarree(), zorder=50)
+
+
+# Save
+plt.savefig('weather_map.png', bbox_inches='tight', pad_inches=0.02)
+
+
