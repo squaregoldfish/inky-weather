@@ -1,4 +1,8 @@
 from ecmwf.opendata import Client
+import glob
+import os
+
+[os.remove(f) for f in glob.glob('pressure*.idx')]
 
 client = Client()
 

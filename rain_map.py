@@ -51,7 +51,7 @@ tile_provider = TileProvider({
 fig, ax = plt.subplots(figsize=[4, 2.75], subplot_kw={'projection': PROJECTION})
 ax.set_extent([min_lon, max_lon, min_lat, max_lat], ccrs.PlateCarree())
 ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '10m', ec='#000000', fc='#f3fff3'))
-#ctx.add_basemap(ax, source=tile_provider, zoom=ZOOM, crs=PROJECTION, zorder=10)
+ctx.add_basemap(ax, source=tile_provider, zoom=ZOOM, crs=PROJECTION, zorder=10)
 ax.plot(point_lon, point_lat, 'ro', markersize=8, transform=ccrs.PlateCarree(), zorder=10)
 ax.plot(2.939751, 51.23239, 'ro', markersize=5, transform=ccrs.PlateCarree(), zorder=10)
 
