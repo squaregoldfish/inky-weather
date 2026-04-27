@@ -36,9 +36,6 @@ max_lon = point_lon + (MAP_WIDTH / 2)
 min_lat = point_lat - (MAP_HEIGHT / 2)
 max_lat = point_lat + (MAP_HEIGHT / 2)
 
-# Define the bounding box
-bbox = (min_lon, min_lat, max_lon, max_lat)
-
 radar_response = requests.get(API_URL)
 radar_json = json.loads(radar_response.content)
 tile_host = radar_json['host']
@@ -60,7 +57,7 @@ figsize_y = figsize_x * fig_ratio
 
 # Create a map with PlateCarree projection
 fig, ax = plt.subplots(figsize=[figsize_x, figsize_y], subplot_kw={'projection': PROJECTION})
-ax.set_extent([bbox[0], bbox[2], bbox[1], bbox[3]], ccrs.PlateCarree())
+ax.set_extent([min_lon, max_lon, min_lat, max_lat], ccrs.PlateCarree())
 
 # Rain radar
 ctx.add_basemap(ax, source=tile_provider, zoom=ZOOM, crs=PROJECTION, zorder=10)
