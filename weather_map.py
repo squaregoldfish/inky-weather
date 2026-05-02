@@ -63,7 +63,7 @@ ax.set_extent([min_lon, max_lon, min_lat, max_lat], ccrs.PlateCarree())
 ctx.add_basemap(ax, source=tile_provider, zoom=ZOOM, crs=PROJECTION, zorder=10)
 
 # Countries and coasts
-ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '10m', linewidth=0.5, ec='#888888', fc='#f3fff3'))
+ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '10m', linewidth=0.5, ec='#000000', fc='#64ff64'))
 
 # Pressure
 pressure = xr.load_dataset('pressure.grib2')['msl'] / 100
@@ -71,7 +71,7 @@ smoothed_pressure = gaussian_filter(pressure.values, sigma=1)
 
 clevs = range(940, 1050, 4)
 cs = ax.contour(pressure.longitude, pressure.latitude, smoothed_pressure, levels=clevs, 
-                colors='#000000', linewidths=1, zorder=9, transform=ccrs.PlateCarree())
+                colors='#000000', linewidths=2, zorder=9, transform=ccrs.PlateCarree())
 ax.clabel(cs, inline=True, fontsize=8)
 
 # Points of interest
