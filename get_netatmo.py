@@ -8,6 +8,11 @@ import requests
 with open('config.toml') as c:
     config = toml.load(c)
 
+
+if config['netatmo']['client_id'] == '':
+    print('No netatmo config present. Aborting.')
+    exit()
+
 TOKEN_FILE = "netatmo_token.json"
 
 def token_updater(token):

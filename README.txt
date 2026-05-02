@@ -2,8 +2,11 @@ Display Netatmo weather and open-meteo forecasts on an Inky Impression.
 
 REQUIREMENTS
 
-This installation assumes that a lot of required Python packages have been included in system libs.
-The requirements.txt is not exhaustive.
+This installation assumes that a lot of required Python packages have been included in system libs
+  python -m venv .venv --system-site-packages
+  
+The requirements.txt is probably exhaustive, but you should install as much as possible via
+distribution packages, and then add the remainder using pip.
 
 Requires wgrib2 v3.7.0. Newer versions won't work on a Pi Zero
 
