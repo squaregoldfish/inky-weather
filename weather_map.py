@@ -13,7 +13,13 @@ import math
 import numpy as np
 import xarray as xr
 from scipy.ndimage import gaussian_filter
+from time import perf_counter as pc
 
+TIMINGS = False
+
+if TIMINGS:
+    print('Init')
+    t0 = pc()
 
 API_URL = 'https://api.rainviewer.com/public/weather-maps.json'
 BLUR = 0
@@ -51,6 +57,12 @@ tile_provider = TileProvider({
     "cross_origin": "Anonymous"}
 )
 
+if TIMINGS:
+    print(pc() - t0)
+    print('Init figure')
+    t0 = pc()
+
+
 fig_ratio = 480 / 800
 figsize_x = 10.26
 figsize_y = figsize_x * fig_ratio
@@ -59,14 +71,29 @@ figsize_y = figsize_x * fig_ratio
 fig, ax = plt.subplots(figsize=[figsize_x, figsize_y], subplot_kw={'projection': PROJECTION})
 ax.set_extent([min_lon, max_lon, min_lat, max_lat], ccrs.PlateCarree())
 
+if TIMINGS:
+    print(pc() - t0)
+    print('Rain radar')
+    t0 = pc()
+
 # Rain radar
 ctx.add_basemap(ax, source=tile_provider, zoom=ZOOM, crs=PROJECTION, zorder=10)
 
+if TIMINGS:
+    print(pc() - t0)
+    print('Land')
+    t0 = pc()
+
 # Countries and coasts
-ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '10m', linewidth=0.5, ec='#000000', fc='#64ff64'))
+ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '10m', linewidth=0.5, ec='#000000', fc='#96ff96'))
+
+if TIMINGS:
+    print(pc() - t0)
+    print('Pressure')
+    t0 = pc()
 
 # Pressure
-pressure = xr.load_dataset('pressure.grib2')['msl'] / 100
+pressure = xr.load_dataset('pressure.nc')['PRES_meansealevel'][0] / 100
 smoothed_pressure = gaussian_filter(pressure.values, sigma=1)
 
 clevs = range(940, 1050, 4)
@@ -74,13 +101,24 @@ cs = ax.contour(pressure.longitude, pressure.latitude, smoothed_pressure, levels
                 colors='#000000', linewidths=2, zorder=9, transform=ccrs.PlateCarree())
 ax.clabel(cs, inline=True, fontsize=8)
 
+if TIMINGS:
+    print(pc() - t0)
+    print('Locations')
+    t0 = pc()
+
 # Points of interest
 ax.plot(point_lon, point_lat, 'ro', markersize=7, transform=ccrs.PlateCarree(), zorder=50)
 ax.plot(1.484565, 52.544083, 'ro', markersize=5.5, transform=ccrs.PlateCarree(), zorder=50)
 ax.plot(0.465837, 52.796555, 'ro', markersize=5.5, transform=ccrs.PlateCarree(), zorder=50)
 
+if TIMINGS:
+    print(pc() - t0)
+    print('Save PNG')
+    t0 = pc()
 
 # Save
 plt.savefig('weather_map.png', bbox_inches='tight', pad_inches=0.02)
 
+if TIMINGS:
+    print(pc() - t0)
 

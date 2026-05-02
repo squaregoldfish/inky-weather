@@ -216,6 +216,7 @@ output
 *.dat
 *.idx
 *.grib2
+*.nc
 
 nohup.out
 
