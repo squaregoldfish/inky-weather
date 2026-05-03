@@ -310,43 +310,52 @@ def rain(d, module, forecast):
     hour = round(module['sum_rain_1'], 1)
     day = round(module['sum_rain_24'], 1)
 
-    hour_color = 'rgb(118, 199, 236)'
-    day_color = '#9999ff'
-    forecast_color = day_color
+    hour_color = '#6464ff'
+    day_color = '#0000ff'
+    forecast_color = '#c8c8ff'
 
-    START = 580
-    END = 780
+    START = 590
+    END = 784
     WIDTH = END - START
+    TOP = 98
+    HEIGHT = 12
+
+    print(WIDTH)
     
     if day == 0 and hour == 0 and forecast == 0:
-        d.append(draw.Text('Dry', 60, 640, 75, font_weight='Bold', fill='rgb(220, 220, 255)', stroke_width=0, text_anchor='center'))
+        d.append(draw.Text('Dry', 60, 635, 80, font_family='Noto Sans', font_weight='Bold', fill='#9696ff', stroke_width=0, text_anchor='center'))
     else:
-        if forecast <= day:
-            tenth_width = WIDTH / (day * 10)
-        else:
-            # Forecast
-            tenth_width = WIDTH / (forecast * 10)
-            d.append(draw.Lines(START, 30, END, 30, END, 90, START, 90, fill='white',
-                            stroke=forecast_color, stroke_dasharray='9,5', close='false'))
+        d.append(draw.Text('Rain', 20, START - 3, 50, font_family='Noto Sans', font_weight='Regular', fill=day_color, text_anchor='start'))
 
-        day_width = (day - hour) * 10 * tenth_width
-        hour_width = hour * 10 * tenth_width
-
-        d.append(draw.Rectangle(START + day_width, 30, hour_width, 60, fill=hour_color, stroke=hour_color))       
-        if day != hour:
-            d.append(draw.Rectangle(START, 30, day_width, 60, fill=day_color, stroke=day_color))
-        
-        d.append(draw.Text(f'{day:.1f}mm', 26, START, 114, font_weight='Bold', fill=day_color, stroke_width=0))
-        
+        rain_amount = ''
         if hour > 0:
-            d.append(draw.Text(f'{hour:.1f}', 18, START, 134, font_weight='Bold', fill=hour_color, stroke_width=0, text_anchor='center'))
-        d.append(draw.Text(f'{forecast:.1f}', 18, END, 111, font_weight='Bold', font_style='Italic', fill=forecast_color, stroke_width=0, text_anchor='end'))
+            rain_amount += f'{hour}/'
+        rain_amount += f'{day + hour}mm'
+
+        d.append(draw.Text(rain_amount, 20, END, 50, font_weight='Regular', fill=day_color, text_anchor='end'))
+
+        d.append(draw.Text('Forecast', 20, START - 3, 80, font_family='Noto Sans', font_weight='Regular', fill=day_color, text_anchor='start'))
+        d.append(draw.Text(f'{forecast}mm', 20, END, 80, font_weight='Regular', fill=day_color, text_anchor='end'))
+
+        total = day + forecast
+        tenth_width = WIDTH / (total * 10)
+
+        day_width = math.ceil((day - hour) * 10 * tenth_width)
+        hour_width = math.ceil(hour * 10 * tenth_width)
+        forecast_width = math.ceil(forecast * 10 * tenth_width)
+
+        if day_width > 0:
+            d.append(draw.Rectangle(START, TOP, day_width, HEIGHT, fill=day_color, stroke_width=0))       
+        if hour_width > 0:
+            d.append(draw.Rectangle(START + day_width, TOP, hour_width, HEIGHT, fill=hour_color, stroke_width=0))
+        if forecast_width > 0:
+            d.append(draw.Rectangle(START + day_width + hour_width, TOP, forecast_width, HEIGHT, fill=forecast_color, stroke_width=0))
 
 def temperature_plot(ax, dates, temps, markers, color, linewidth):
     ax.plot(dates, temps, color=color, linewidth=linewidth, marker='o', markersize=6 if markers else 0)
 
 def precip_plot(ax, dates, precip, bar_width, min_y):
-    ax.bar(dates, precip, color='#9999ff', width=bar_width)
+    ax.bar(dates, precip, color='#9696ff', width=bar_width)
     if (precip < 0.1).all():
         ax.set_yticks([])
     elif (precip <= min_y).all():
@@ -530,6 +539,13 @@ def daily_forecast(canvas, forecast):
 
     canvas.append(draw.Image(400, 125, 400, 275, data=plot_bytes.getvalue(), mime_type='image/svg+xml', embed=True))
 
+def get_remaining_precip(hourly):
+    today = pd.Timestamp.now(tz=hourly['date'].iloc[0].tz).normalize()
+    tomorrow = today + pd.Timedelta(days=1)
+    precip_sum = hourly[hourly['date'] < tomorrow]['precipitation'].sum()
+    return round(precip_sum, 1)
+
+
 # Load Config
 with open('config.toml') as cin:
     config = toml.loads(cin.read())
@@ -579,7 +595,8 @@ while True:
     d.append(r)
 
     # Timestamp
-    d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12, font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12,
+        font_family='Noto Sans', font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
 
     # Draw basic Netatmo stuff (no rain)
     draw_netatmo_outdoor(config, d, outdoor_module, bedroom_module)
@@ -602,7 +619,8 @@ while True:
 
 
     # Rain info
-    rain(d, rain_module, today_forecast['precipitation_sum'])
+    forecast_rain = get_remaining_precip(hourly)
+    rain(d, rain_module, forecast_rain)
 
     # Sun info
     sun_info(d, sunrise, sunset)
