@@ -320,8 +320,6 @@ def rain(d, module, forecast):
     WIDTH = END - START
     TOP = 98
     HEIGHT = 12
-
-    print(WIDTH)
     
     if day == 0 and hour == 0 and forecast == 0:
         d.append(draw.Text('Dry', 60, 635, 80, font_family='Noto Sans', font_weight='Bold', fill='#9696ff', stroke_width=0, text_anchor='center'))
@@ -474,9 +472,6 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
         range_min = midpoint - 2.5
         range_max = midpoint + 2.5
 
-        print(range_min)
-        print(range_max)
-
         if range >= 4.75:
             range_min -= 0.2
             range_max += 0.2
@@ -515,9 +510,6 @@ def daily_forecast(canvas, forecast):
         midpoint = min(daily['temperature_2m_min']) + (range / 2)
         range_min = midpoint - 2.5
         range_max = midpoint + 2.5
-
-        print(range_min)
-        print(range_max)
 
         if range >= 4.75:
             range_min -= 0.2
