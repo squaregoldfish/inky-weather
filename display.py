@@ -461,7 +461,17 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     range = max(forecast['temperature_2m']) - min(forecast['temperature_2m'])
     if range < 5:
         midpoint = min(forecast['temperature_2m']) + (range / 2)
-        ax.set_ylim([midpoint - 2.5, midpoint + 2.5])
+        range_min = midpoint - 2.5
+        range_max = midpoint + 2.5
+
+        print(range_min)
+        print(range_max)
+
+        if range >= 4.75:
+            range_min -= 0.2
+            range_max += 0.2
+
+        ax.set_ylim([range_min, range_max])
 
     precip_hour = ax.twinx()
     ax.set_zorder(precip_hour.get_zorder()+1)
@@ -491,8 +501,18 @@ def daily_forecast(canvas, forecast):
 
     range = max(daily['temperature_2m_max']) - min(daily['temperature_2m_min'])
     if range < 5:
-        midpoint = min(forecast['temperature_2m_min']) + (range / 2)
-        ax.set_ylim([midpoint - 2.5, midpoint + 2.5])
+        midpoint = min(daily['temperature_2m_min']) + (range / 2)
+        range_min = midpoint - 2.5
+        range_max = midpoint + 2.5
+
+        print(range_min)
+        print(range_max)
+
+        if range >= 4.75:
+            range_min -= 0.2
+            range_max += 0.2
+
+        ax.set_ylim([range_min, range_max])
 
     precip_day = ax.twinx()
     ax.set_zorder(precip_day.get_zorder()+1)
@@ -575,10 +595,10 @@ while True:
     hourly_forecast(d, hourly, sunrise, sunset)
 
     # Daily forecast plot
-    #daily_forecast(d, daily)
+    daily_forecast(d, daily)
 
     # Rain map
-    d.append(draw.Image(415, 143, 374, 218, 'rain_map.png', embed=True))
+    #d.append(draw.Image(415, 143, 374, 218, 'rain_map.png', embed=True))
 
 
     # Rain info
