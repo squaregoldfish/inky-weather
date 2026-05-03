@@ -10,6 +10,7 @@ import math
 import matplotlib.dates as mdates
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import MultipleLocator
 import numpy as np
 import pandas as pd
@@ -492,6 +493,7 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     precip_hour.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
 
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=cet))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
@@ -530,6 +532,7 @@ def daily_forecast(canvas, forecast):
     precip_plot(precip_day, forecast['date'], forecast['precipitation_sum'], 0.5, 5)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=cet))
     ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
