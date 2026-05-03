@@ -329,13 +329,13 @@ def rain(d, module, forecast):
 
         rain_amount = ''
         if hour > 0:
-            rain_amount += f'{hour}/'
-        rain_amount += f'{day + hour}mm'
+            rain_amount += f'{hour:.1f}/'
+        rain_amount += f'{day:.1f}mm'
 
         d.append(draw.Text(rain_amount, 20, END, 50, font_weight='Regular', fill=day_color, text_anchor='end'))
 
         d.append(draw.Text('Forecast', 20, START - 3, 80, font_family='Noto Sans', font_weight='Regular', fill=day_color, text_anchor='start'))
-        d.append(draw.Text(f'{forecast}mm', 20, END, 80, font_weight='Regular', fill=day_color, text_anchor='end'))
+        d.append(draw.Text(f'{forecast:.1f}mm', 20, END, 80, font_weight='Regular', fill=day_color, text_anchor='end'))
 
         total = day + forecast
         tenth_width = WIDTH / (total * 10)
@@ -616,7 +616,6 @@ while True:
 
     # Rain map
     #d.append(draw.Image(415, 143, 374, 218, 'rain_map.png', embed=True))
-
 
     # Rain info
     forecast_rain = get_remaining_precip(hourly)
