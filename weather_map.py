@@ -94,7 +94,18 @@ if TIMINGS:
 
 # Pressure
 pressure = xr.load_dataset('pressure.nc')['PRES_meansealevel'][0] / 100
+
+if TIMINGS:
+    print(pc() - t0)
+    print('Smooth Pressure')
+    t0 = pc()
+
 smoothed_pressure = gaussian_filter(pressure.values, sigma=1)
+
+if TIMINGS:
+    print(pc() - t0)
+    print('Draw Pressure')
+    t0 = pc()
 
 clevs = range(940, 1050, 4)
 cs = ax.contour(pressure.longitude, pressure.latitude, smoothed_pressure, levels=clevs, 
