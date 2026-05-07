@@ -355,7 +355,7 @@ def temperature_plot(ax, dates, temps, markers, color, linewidth):
 
 def precip_plot(ax, dates, precip, bar_width, min_y):
     ax.bar(dates, precip, color='#9696ff', width=bar_width)
-    if (precip < 0.1).all():
+    if (precip < 0.01).all():
         ax.set_yticks([])
     elif (precip <= min_y).all():
         ax.set_ylim((0, min_y))
@@ -483,7 +483,6 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     ax.patch.set_visible(False)
 
     precip_plot(precip_hour, forecast['date'], forecast['precipitation'], 0.025, 0.5)
-
     precip_hour.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
     precip_hour.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
 
@@ -524,7 +523,6 @@ def daily_forecast(canvas, forecast):
     precip_plot(precip_day, forecast['date'], forecast['precipitation_sum'], 0.5, 5)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=cet))
     ax.xaxis.set_major_locator(MultipleLocator(1))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
