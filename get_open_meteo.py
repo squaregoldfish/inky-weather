@@ -66,7 +66,7 @@ daily_data["precipitation_sum"] = daily_precipitation_sum
 
 daily_dataframe = pd.DataFrame(data = daily_data)
 
-cet = pytz.timezone('CET')
+cet = pytz.timezone('Europe/Brussels')
 hourly_dataframe['date'] = hourly_dataframe['date'].dt.tz_convert(cet)
 daily_dataframe['date'] = daily_dataframe['date'].dt.tz_convert(cet)
 
