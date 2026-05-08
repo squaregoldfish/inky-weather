@@ -1,6 +1,7 @@
 from cartopy import crs as ccrs
 import cartopy.feature as cfeature
 import contextily as ctx
+from datetime import datetime
 import geopandas as gpd
 import json
 import matplotlib.pyplot as plt
@@ -85,7 +86,8 @@ if TIMINGS:
     t0 = pc()
 
 # Countries and coasts
-ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries', '10m', linewidth=0.5, ec='#000000', fc='#96ff96'))
+ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries',
+    '10m', linewidth=0.5, ec='#000000', fc='#96ff96'))
 
 if TIMINGS:
     print(pc() - t0)
@@ -126,6 +128,10 @@ if TIMINGS:
     print(pc() - t0)
     print('Save PNG')
     t0 = pc()
+
+ax.text(0.992, 0.047, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), transform=ax.transAxes,
+    ha='right', va='top', fontfamily='Noto Sans', fontweight='bold', fontsize=12, color='#323232',
+    zorder=75, bbox=dict(facecolor='white', edgecolor='white', alpha=0.9))
 
 # Save
 plt.savefig('weather_map.png', bbox_inches='tight', pad_inches=0.02)
