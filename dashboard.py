@@ -588,7 +588,7 @@ d.append(r)
 
 # Timestamp
 d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12,
-    font_family='Noto Sans', font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='end'))
+    font_family='Noto Sans', font_weight='Bold', fill='rgb(50, 50, 50)', stroke_width=0, text_anchor='end'))
 
 # Draw basic Netatmo stuff (no rain)
 draw_netatmo_outdoor(config, d, outdoor_module, bedroom_module)
