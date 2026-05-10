@@ -27,14 +27,14 @@ do
 
     last_hour=$current_hour
 
-    # Retrieve Netatmo
-    python get_netatmo.py
-
     # Draw main weather map
     python weather_map.py
 
     # Rain map (for dashboard display)
     python rain_map.py
+
+    # Retrieve Netatmo
+    python get_netatmo.py
 
     # Draw dashboards
     python dashboard.py

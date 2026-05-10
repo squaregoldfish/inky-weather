@@ -5,6 +5,7 @@ import json
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from PIL import Image
 import requests
 import toml
@@ -56,5 +57,6 @@ ax.plot(point_lon, point_lat, 'ro', markersize=8, transform=ccrs.PlateCarree(), 
 ax.plot(2.939751, 51.23239, 'ro', markersize=5, transform=ccrs.PlateCarree(), zorder=10)
 
 plt.tight_layout()
-plt.savefig('rain_map.png', bbox_inches='tight', pad_inches=0.02)
+plt.savefig('rain_map.new.png', bbox_inches='tight', pad_inches=0.02)
+os.replace('rain_map.new.png', 'rain_map.png')
 

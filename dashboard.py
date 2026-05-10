@@ -13,8 +13,10 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import MultipleLocator
 import numpy as np
+import os
 import pandas as pd
 import pytz
+import shutil
 import sqlite3
 import time
 import toml
@@ -611,10 +613,17 @@ sun_info(d, sunrise, sunset)
 
 # Daily forecast plot
 daily_forecast(d, daily)
-d.save_png('dashboard_forecast.png')
+d.save_png('dashboard_forecast.new.png')
+os.replace('dashboard_forecast.new.png', 'dashboard_forecast.png')
 
 d.append(draw.Rectangle(410, 130, 390, 255, fill="white", stroke=None))
 
 # Rain map
 d.append(draw.Image(415, 143, 374, 218, 'rain_map.png', embed=True))
-d.save_png('dashboard_rain.png')
+d.save_png('dashboard_rain.new.png')
+os.replace('dashboard_rain.new.png', 'dashboard_rain.png')
+
+if os.path.isdir('output'):
+    shutil.copy('dashboard_forecast.png', 'output/dashboard_forecast.png')
+    shutil.copy('dashboard_rain.png', 'output/dashboard_rain.png')
+

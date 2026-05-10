@@ -12,8 +12,10 @@ from xyzservices import TileProvider
 import xyzservices.providers as xyz
 import math
 import numpy as np
+import os
 import xarray as xr
 from scipy.ndimage import gaussian_filter
+import shutil
 from time import perf_counter as pc
 
 TIMINGS = False
@@ -134,7 +136,11 @@ ax.text(0.992, 0.047, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), transform=ax
     zorder=75, bbox=dict(facecolor='white', edgecolor='white', alpha=0.9))
 
 # Save
-plt.savefig('weather_map.png', bbox_inches='tight', pad_inches=0.02)
+plt.savefig('weather_map.new.png', bbox_inches='tight', pad_inches=0.02)
+os.replace('weather_map.new.png', 'weather_map.png')
+
+if os.path.isdir('output'):
+    shutil.copy('weather_map.png', 'output/weather_map.png')
 
 if TIMINGS:
     print(pc() - t0)
