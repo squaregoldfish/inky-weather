@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import gpiod
 import gpiodevice
 from gpiod.line import Bias, Direction, Edge, Value
@@ -34,23 +34,41 @@ def poll_buttons():
             index = offsets.index(event.line_offset)
             LAST_BUTTON_PUSH = labels[index]
 
-def rain_incoming():
-    with sqlite3.connect('weather_display.sqlite') as db:
-        hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
+def check_rain_imminent():
+    global last_rain_check
+    global rain_imminent
 
-    cet = pytz.timezone('Europe/Brussels')
-    current_hour = datetime.now(cet).replace(minute=0, second=0, microsecond=0)
-    rain_search_limit = current_hour + pd.Timedelta(hours=RAIN_LIMIT)
+    check_rain = False
 
-    hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= rain_search_limit)].copy()
-    return hourly['precipitation'].sum() > 0.0
+    last_check_interval = timedelta(minutes=5)
+    if last_rain_check is None or datetime.now() - last_rain_check > last_check_interval:
+        check_rain = True
+
+    if check_rain:
+        try:
+            with sqlite3.connect('weather_display.sqlite') as db:
+                hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
+
+            cet = pytz.timezone('Europe/Brussels')
+            current_hour = datetime.now(cet).replace(minute=0, second=0, microsecond=0)
+            rain_search_limit = current_hour + pd.Timedelta(hours=RAIN_LIMIT)
+
+            hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= rain_search_limit)].copy()
+
+            rain_imminent = hourly['precipitation'].sum() > 0.0
+            last_rain_check = datetime.now()
+        except:
+            pass
 
 
 def get_draw_file(mode):
+    global rain_imminent
+
     real_draw_mode = mode
+    check_rain_imminent()
 
     if real_draw_mode == 'AUTO':
-        real_draw_mode = 'RAIN' if rain_incoming() else 'FORECAST'
+        real_draw_mode = 'RAIN' if rain_imminent else 'FORECAST'
 
     if real_draw_mode == 'FORECAST':
         return 'dashboard_forecast.png'
@@ -75,6 +93,8 @@ inky = auto()
 button_mode = 'AUTO'
 last_draw_file = None
 last_draw_time = None
+last_rain_check = None
+rain_imminent = False
 
 while True:
 
