@@ -101,19 +101,28 @@ while True:
     draw_image = False
 
     if LAST_BUTTON_PUSH is not None and LAST_BUTTON_PUSH != button_mode:
+        for i in range(4):
+            led_gpio.set_value(led, Value.ACTIVE)
+            sleep(0.1)
+            led_gpio.set_value(led, Value.INACTIVE)
+            sleep(0.1)
+
+
         button_mode = LAST_BUTTON_PUSH
 
+    if button_mode == 'RAIN' or button_mode == 'FORECAST':
+        led_gpio.set_value(led, Value.ACTIVE)
+    else:
+        led_gpio.set_value(led, Value.INACTIVE)
 
     draw_file = get_draw_file(button_mode)
     if draw_file != last_draw_file or last_draw_time is None or os.path.getmtime(draw_file) > last_draw_time:
         draw_image = True
 
     if draw_image:
-        led_gpio.set_value(led, Value.ACTIVE)
         image = Image.open(draw_file)
         inky.set_image(image.resize(inky.resolution), saturation=0)
         inky.show()
-        led_gpio.set_value(led, Value.INACTIVE)
         last_draw_file = draw_file
         last_draw_time = os.path.getmtime(draw_file)
 
