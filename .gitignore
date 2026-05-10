@@ -217,6 +217,6 @@ output
 *.idx
 *.grib2
 *.nc
-
 nohup.out
+*nohup
 
