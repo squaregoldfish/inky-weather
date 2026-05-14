@@ -281,28 +281,19 @@ def pressure(d, module):
     d.append(draw.Text(decimal_part, 20, 421, 60, font_weight='Bold', fill=pressure_color, stroke_width=0))
     d.append(draw.Text("mb", 18, 433, 38, font_weight='Regular', fill=pressure_color, stroke_width=0, text_anchor='end'))
 
-    # Trend
-    trend = module['pressure_trend']
-
-    max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
-    d.append(draw.Lines(440, 42, 450, 32, 460, 42, fill=max_arrow_color, stroke=None, close='true'))
-
-    min_arrow_color = MIN_ARROW_ON if trend == 'down' else MIN_ARROW_OFF
-    d.append(draw.Lines(440, 50, 450, 60, 460, 50, fill=min_arrow_color, stroke=None, close='true'))
-
 def pressure_trend(d, module):
 
-    MAX_ARROW_X = 375
-    MIN_ARROW_X = 270
-    ARROW_Y = 100
+    MAX_ARROW_X = 380
+    MIN_ARROW_X = 274
+    ARROW_Y = 99
 
     trend = module['pressure_trend']
 
     if trend == 'up':
-        d.append(draw.Lines(MAX_ARROW_X, ARROW_Y, MAX_ARROW_X + 10, ARROW_Y + 5, MAX_ARROW_X, ARROW_Y + 10, fill=MAX_ARROW_ON, stroke=None, close='true'))
+        d.append(draw.Lines(MAX_ARROW_X, ARROW_Y, MAX_ARROW_X + 12, ARROW_Y + 6, MAX_ARROW_X, ARROW_Y + 12, fill=MAX_ARROW_ON, stroke=None, close='true'))
 
     if trend == 'down':
-        d.append(draw.Lines(MIN_ARROW_X, ARROW_Y, MIN_ARROW_X - 10, ARROW_Y + 5, MIN_ARROW_X, ARROW_Y + 10, fill=MIN_ARROW_ON, stroke=None, close='true'))
+        d.append(draw.Lines(MIN_ARROW_X, ARROW_Y, MIN_ARROW_X - 12, ARROW_Y + 6, MIN_ARROW_X, ARROW_Y + 12, fill=MIN_ARROW_ON, stroke=None, close='true'))
 
 def humidity(d, module):
     humidity = module['Humidity']
