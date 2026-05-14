@@ -21,6 +21,8 @@ import sqlite3
 import time
 import toml
 
+TIMEZONE = pytz.timezone('Europe/Brussels')
+
 MIN_MAX_COLOR = 'black'
 MAX_ARROW_ON = 'rgb(255, 0, 0)'
 MAX_ARROW_OFF = 'rgb(255, 150, 150)'
@@ -392,18 +394,18 @@ def battery(y, name, value):
 
     d.append(draw.Circle(790, y, 6, stroke_width=0, fill=color))
 
-def get_sun(position, timezone):
+def get_sun(position):
     today = datetime.now().date()
     tomorrow = today + timedelta(days=1)
 
-    location = LocationInfo(name='Home', region='', timezone=timezone,
+    location = LocationInfo(name='Home', region='', timezone=TIMEZONE,
                         latitude=position['latitude'], longitude=position['longitude'])
 
     today_sun = sun(location.observer, date=today, tzinfo=location.timezone)
     tomorrow_sun = sun(location.observer, date=tomorrow, tzinfo=location.timezone)
 
-    sunrise = today_sun['sunrise'] if today_sun['sunrise'] >= datetime.now(timezone) else tomorrow_sun['sunrise'] 
-    sunset = today_sun['sunset'] if today_sun['sunset'] >= datetime.now(timezone) else tomorrow_sun['sunset'] 
+    sunrise = today_sun['sunrise'] if today_sun['sunrise'] >= datetime.now(TIMEZONE) else tomorrow_sun['sunrise'] 
+    sunset = today_sun['sunset'] if today_sun['sunset'] >= datetime.now(TIMEZONE) else tomorrow_sun['sunset'] 
 
     return(sunrise, sunset)
 
@@ -419,7 +421,7 @@ def sun_info(d, sunrise, sunset):
     d.append(draw.Text(sunset.strftime("%M"), 35, 645, 471, font_weight='Bold', fill=SUNSET, stroke_width=0))
 
 
-def draw_netatmo_outdoor(config, canvas, outdoor_module, bedroom_module):
+def draw_netatmo_outdoor(canvas, outdoor_module, bedroom_module):
     # Temperature
     outdoor_temperature(canvas, outdoor_module)
 
@@ -436,7 +438,7 @@ def draw_netatmo_outdoor(config, canvas, outdoor_module, bedroom_module):
     humidity_chart = gauge_chart([(humidity, '#2F4F4F')], '%', HUMIDITY_SCALE)
     canvas.append(draw.Image(360, -85, 250, 250, data=humidity_chart, mime_type='image/svg+xml', embed=True))
 
-def draw_netatmo_indoor(config, canvas, living_room, bedroom):
+def draw_netatmo_indoor(canvas, living_room, bedroom):
     indoor_temp(433, 'sofa.svg', living_room)
     indoor_temp(468, 'bed.svg', bedroom)
 
@@ -461,6 +463,29 @@ def draw_netatmo_indoor(config, canvas, living_room, bedroom):
 
     co2_chart = gauge_chart(co2_data, 'ppm', CO2_SCALE)
     d.append(draw.Image(270, 320, 200, 200, data=co2_chart, mime_type='image/svg+xml', embed=True))
+
+def draw_last_netatmo_time(canvas, times):
+    oldest = datetime.fromtimestamp(sorted(times)[0], TIMEZONE)
+    age = (datetime.now(TIMEZONE) - oldest).total_seconds()
+
+    days = int(age / 86400)
+    remainder = age - (days * 86400)
+    hours = int(remainder / 3600)
+    remainder = remainder - (hours * 3600)
+    minutes = int(remainder / 60)
+    secs = remainder - (minutes * 60)
+
+    if days > 0:
+        result = f'{days}d {' ' if hours < 10 else ''}{hours}:{minutes:02}:{secs:02}'
+    else:
+        result = ''
+        result += f'{hours}:'
+        if minutes < 10:
+            result += '0'
+        result += f'{minutes}'
+
+    canvas.append(draw.Text(result, 15, 3, 15,
+        font_family='Noto Sans', font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='start'))
 
 def hourly_forecast(canvas, forecast, sunrise, sunset):
     plt.rc('font', family=FONT, weight='regular', size=10)
@@ -488,7 +513,7 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     precip_hour.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
     precip_hour.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
 
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=cet))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=TIMEZONE))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.tight_layout()
@@ -523,7 +548,7 @@ def daily_forecast(canvas, forecast):
     ax.patch.set_visible(False)
 
     precip_plot(precip_day, forecast['date'], forecast['precipitation_sum'], 0.5, 5)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=cet))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=TIMEZONE))
     ax.xaxis.set_major_locator(MultipleLocator(1))
 
     plt.tight_layout()
@@ -560,20 +585,22 @@ for module in netatmo['devices'][0]['modules']:
     if module_name == 'Outdoor Module':
         outdoor_module = module['dashboard_data']
         outdoor_module['battery'] = module['battery_percent']
+        outdoor_module['time'] = module['last_seen']
     elif module_name == 'Indoor 1':
         living_room_module = module['dashboard_data']
         living_room_module['battery'] = module['battery_percent']
+        living_room_module['time'] = module['last_seen']
     elif module_name == 'Rain':
         rain_module = module['dashboard_data']
         rain_module['battery'] = module['battery_percent']
+        rain_module['time'] = module['last_seen']
 
 # Load and setup meteo forecast
 with sqlite3.connect('weather_display.sqlite') as db:
     hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
     daily = pd.read_sql('SELECT * FROM open_meteo_daily', db, parse_dates='date')
 
-cet = pytz.timezone('Europe/Brussels')
-current_hour = datetime.now(cet).replace(minute=0, second=0, microsecond=0)
+current_hour = datetime.now(TIMEZONE).replace(minute=0, second=0, microsecond=0)
 plus_24_hours = current_hour + pd.Timedelta(hours=24)
 hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= plus_24_hours)].copy()
 
@@ -581,7 +608,7 @@ today_forecast = daily.iloc[0]
 daily = daily[1:6].copy()
 
 # Sun info
-sunrise, sunset = get_sun(config['location'], cet)
+sunrise, sunset = get_sun(config['location'])
 
 # Prepare canvas
 d = draw.Drawing(800, 480, origin=(0, 0), font_family=FONT)
@@ -593,8 +620,11 @@ d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12,
     font_family='Noto Sans', font_weight='Bold', fill='rgb(50, 50, 50)', stroke_width=0, text_anchor='end'))
 
 # Draw basic Netatmo stuff (no rain)
-draw_netatmo_outdoor(config, d, outdoor_module, bedroom_module)
-draw_netatmo_indoor(config, d, bedroom_module, living_room_module)
+draw_netatmo_outdoor(d, outdoor_module, bedroom_module)
+draw_netatmo_indoor(d, bedroom_module, living_room_module)
+
+# Netatmo last seen time
+draw_last_netatmo_time(d, (bedroom_module['time_utc'], outdoor_module['time'], living_room_module['time'], rain_module['time']))
 
 # Netatmo Battery Status
 battery(436, 'O', outdoor_module['battery'])
