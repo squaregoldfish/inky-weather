@@ -255,8 +255,11 @@ def outdoor_temperature(d, module):
     d.append(draw.Text('°C', 30, 154, 47, font_weight='Bold', fill='black', stroke='black'))
 
     # Max/Min and trend
-    trend = module['temp_trend']
-
+    if 'temp_trend' in module:
+        trend = module['temp_trend']
+    else:
+        trend = ''
+        
     # Max Temp
     max = f'{module["max_temp"]:.1f}'
     max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
