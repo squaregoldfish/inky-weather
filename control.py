@@ -3,6 +3,7 @@ import gpiod
 import gpiodevice
 from gpiod.line import Bias, Direction, Edge, Value
 from inky import auto
+import json
 import os
 import pandas as pd
 from PIL import Image
@@ -45,23 +46,18 @@ def check_rain_imminent():
         check_rain = True
 
     if check_rain:
-
         check_result = False
-
         try:
             # See if it's currently raining
             with open('netatmo_weather.json') as nin:
                 netatmo = json.load(nin)
+                netatmo_rain = 0
+                for module in netatmo['devices'][0]['modules']:
+                    if module['module_name'] == 'Rain':
+                        netatmo_rain = module['dashboard_data']['sum_rain_1']
 
-            netatmo_rain = 0
-
-            for module in netatmo['devices'][0]['modules']:
-                if module['module_name'] == 'Rain':
-                    netatmo_rain = module['dashboard_data']['sum_rain_1']
-
-            if netatmo_rain > 0:
-                check_result = True
-
+                if netatmo_rain > 0:
+                    check_result = True
 
             # Check forecast
             if not check_result:
@@ -77,10 +73,10 @@ def check_rain_imminent():
                 if hourly['precipitation'].sum() > 0.0:
                     check_result = True
 
+            rain_imminent = check_result
             last_rain_check = datetime.now()
-        except:
-            pass
-
+        except Exception as e:
+            print(e)
 
 def get_draw_file(mode):
     global rain_imminent
