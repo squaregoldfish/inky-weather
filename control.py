@@ -45,17 +45,38 @@ def check_rain_imminent():
         check_rain = True
 
     if check_rain:
+
+        check_result = False
+
         try:
-            with sqlite3.connect('weather_display.sqlite') as db:
-                hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
+            # See if it's currently raining
+            with open('netatmo_weather.json') as nin:
+                netatmo = json.load(nin)
 
-            cet = pytz.timezone('Europe/Brussels')
-            current_hour = datetime.now(cet).replace(minute=0, second=0, microsecond=0)
-            rain_search_limit = current_hour + pd.Timedelta(hours=RAIN_LIMIT)
+            netatmo_rain = 0
 
-            hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= rain_search_limit)].copy()
+            for module in netatmo['devices'][0]['modules']:
+                if module['module_name'] == 'Rain':
+                    netatmo_rain = module['dashboard_data']['sum_rain_1']
 
-            rain_imminent = hourly['precipitation'].sum() > 0.0
+            if netatmo_rain > 0:
+                check_result = True
+
+
+            # Check forecast
+            if not check_result:
+                with sqlite3.connect('weather_display.sqlite') as db:
+                    hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
+
+                cet = pytz.timezone('Europe/Brussels')
+                current_hour = datetime.now(cet).replace(minute=0, second=0, microsecond=0)
+                rain_search_limit = current_hour + pd.Timedelta(hours=RAIN_LIMIT)
+
+                hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= rain_search_limit)].copy()
+
+                if hourly['precipitation'].sum() > 0.0:
+                    check_result = True
+
             last_rain_check = datetime.now()
         except:
             pass
