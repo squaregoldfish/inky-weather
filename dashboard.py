@@ -551,7 +551,7 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=TIMEZONE))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    wind_barbs(ax, forecast['date'][::6], list(forecast['wind_speed_10m'][::6]), list(forecast['wind_direction_10m'][::6]))
+    wind_barbs(ax, forecast['date'][1::6], list(forecast['wind_speed_10m'][1::6]), list(forecast['wind_direction_10m'][1::6]))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
