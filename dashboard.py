@@ -2,7 +2,7 @@ from astral import LocationInfo
 from astral.sun import sun
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 import drawsvg as draw
 import io
 import json
@@ -245,8 +245,34 @@ def split_number(number):
 
     return (int_part, decimal_part)
 
+def update_temp_db(time, temp):
+
+    with sqlite3.connect('weather_display.sqlite') as db:
+        db.execute('INSERT INTO netatmo_temp (timestamp, temperature) VALUES (?, ?)', (time, temp))
+
+        one_day_ago = int(datetime.now(timezone.utc).timestamp()) - 86400
+
+        cur = db.cursor()
+        records = cur.execute('''
+            SELECT MIN(temperature), MAX(temperature) FROM netatmo_temp
+            WHERE timestamp >= ?
+            ''', (one_day_ago,)
+        )
+
+        rec = records.fetchone()
+        result = rec[0], rec[1]
+
+        db.execute('DELETE FROM netatmo_temp WHERE timestamp < ?', (one_day_ago,))
+
+    return result
+        
+
+
 def outdoor_temperature(d, module):
     temp = module['Temperature']
+
+    min_temp, max_temp = update_temp_db(module['time_utc'], temp)
+
     int_part, decimal_part = split_number(temp)    
 
     d.append(draw.Text(int_part, 122, 148, 115, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
@@ -261,13 +287,13 @@ def outdoor_temperature(d, module):
         trend = ''
         
     # Max Temp
-    max = f'{module["max_temp"]:.1f}'
+    max = f'{max_temp:.1f}' if max_temp is not None else '--.-'
     max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
 
     d.append(draw.Lines(198, 38, 208, 23, 218, 38, fill=max_arrow_color, stroke=None, close='true'))
     d.append(draw.Text(max, 20, 198, 57, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
 
-    min = f'{module["min_temp"]:.1f}'
+    min = f'{min_temp:.1f}' if min_temp is not None else '--.-'
     min_arrow_color = MIN_ARROW_ON if trend == 'down' else MIN_ARROW_OFF
 
     d.append(draw.Lines(198, 103, 208, 117, 218, 103, fill=min_arrow_color, stroke=None, close='true'))
