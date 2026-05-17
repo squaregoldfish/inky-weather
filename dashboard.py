@@ -507,6 +507,21 @@ def draw_last_netatmo_time(canvas, times):
     canvas.append(draw.Text(result, 15, 3, 15,
         font_family='Noto Sans', font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='start'))
 
+def wind_barbs(ax, xs, speeds, directions):
+    u = list()
+    v = list()
+
+    for i in range(len(speeds)):
+        radians = math.radians(directions[i])
+
+        u.append((speeds[i] * -1) * math.sin(radians))
+        v.append((speeds[i] * -1) * math.cos(radians))
+
+    y_lims = ax.get_ylim()
+    y_pos = y_lims[0] + ((y_lims[1] - y_lims[0]) * 0.9)
+    barb_y = [y_pos] * len(xs)
+    ax.barbs(xs, barb_y, u, v, pivot='middle', linewidth=1.5, barbcolor='#00ff00', zorder=100)
+
 def hourly_forecast(canvas, forecast, sunrise, sunset):
     plt.rc('font', family=FONT, weight='regular', size=10)
     fig, ax = plt.subplots(figsize=(4, 2.75))
@@ -535,6 +550,8 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
 
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H', tz=TIMEZONE))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    wind_barbs(ax, forecast['date'][::6], list(forecast['wind_speed_10m'][::6]), list(forecast['wind_direction_10m'][::6]))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
@@ -570,6 +587,8 @@ def daily_forecast(canvas, forecast):
     precip_plot(precip_day, forecast['date'], forecast['precipitation_sum'], 0.5, 5)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=TIMEZONE))
     ax.xaxis.set_major_locator(MultipleLocator(1))
+
+    wind_barbs(ax, forecast['date'], list(forecast['wind_speed_10m_max']), list(forecast['wind_direction_10m_dominant']))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()

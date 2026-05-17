@@ -18,14 +18,15 @@ openmeteo = openmeteo_requests.Client(session = retry_session)
 
 # Make sure all required weather variables are listed here
 # The order of variables in hourly or daily is important to assign them correctly below
-url = "https://api.open-meteo.com/v1/forecast"
+url = 'https://api.open-meteo.com/v1/forecast'
 params = {
-    "latitude": config['location']['latitude'],
-    "longitude": config['location']['longitude'],
-    "daily": ["temperature_2m_max", "temperature_2m_min", "precipitation_sum"],
-    "hourly": ["temperature_2m", "precipitation"],
-    "timezone": "Europe/Berlin",
+    'latitude': config['location']['latitude'],
+    'longitude': config['location']['longitude'],
+    'daily': ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum', 'wind_speed_10m_max', 'wind_direction_10m_dominant'],
+    'hourly': ['temperature_2m', 'precipitation', 'wind_direction_10m', 'wind_speed_10m'],
+    'timezone': 'Europe/Berlin',
 }
+
 responses = openmeteo.weather_api(url, params=params)
 
 # Process first location. Add a for-loop for multiple locations or weather models
@@ -34,16 +35,22 @@ response = responses[0]
 hourly = response.Hourly()
 hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
 hourly_precipitation = hourly.Variables(1).ValuesAsNumpy()
+hourly_wind_direction_10m = hourly.Variables(2).ValuesAsNumpy()
+hourly_wind_speed_10m = hourly.Variables(3).ValuesAsNumpy()
 
-hourly_data = {"date": pd.date_range(
-    start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
-    end =  pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
+
+hourly_data = {'date': pd.date_range(
+    start = pd.to_datetime(hourly.Time(), unit = 's', utc = True),
+    end =  pd.to_datetime(hourly.TimeEnd(), unit = 's', utc = True),
     freq = pd.Timedelta(seconds = hourly.Interval()),
-    inclusive = "left"
+    inclusive = 'left'
 )}
 
-hourly_data["temperature_2m"] = hourly_temperature_2m
-hourly_data["precipitation"] = hourly_precipitation
+
+hourly_data['temperature_2m'] = hourly_temperature_2m
+hourly_data['precipitation'] = hourly_precipitation
+hourly_data['wind_direction_10m'] = hourly_wind_direction_10m
+hourly_data['wind_speed_10m'] = hourly_wind_speed_10m
 
 hourly_dataframe = pd.DataFrame(data = hourly_data)
 
@@ -52,17 +59,21 @@ daily = response.Daily()
 daily_temperature_2m_max = daily.Variables(0).ValuesAsNumpy()
 daily_temperature_2m_min = daily.Variables(1).ValuesAsNumpy()
 daily_precipitation_sum = daily.Variables(2).ValuesAsNumpy()
+daily_wind_speed_10m_max = daily.Variables(3).ValuesAsNumpy()
+daily_wind_direction_10m_dominant = daily.Variables(4).ValuesAsNumpy()
 
-daily_data = {"date": pd.date_range(
-    start = pd.to_datetime(daily.Time(), unit = "s", utc = True),
-    end =  pd.to_datetime(daily.TimeEnd(), unit = "s", utc = True),
+daily_data = {'date': pd.date_range(
+    start = pd.to_datetime(daily.Time(), unit = 's', utc = True),
+    end =  pd.to_datetime(daily.TimeEnd(), unit = 's', utc = True),
     freq = pd.Timedelta(seconds = daily.Interval()),
-    inclusive = "left"
+    inclusive = 'left'
 )}
 
-daily_data["temperature_2m_max"] = daily_temperature_2m_max
-daily_data["temperature_2m_min"] = daily_temperature_2m_min
-daily_data["precipitation_sum"] = daily_precipitation_sum
+daily_data['temperature_2m_max'] = daily_temperature_2m_max
+daily_data['temperature_2m_min'] = daily_temperature_2m_min
+daily_data['precipitation_sum'] = daily_precipitation_sum
+daily_data['wind_speed_10m_max'] = daily_wind_speed_10m_max
+daily_data['wind_direction_10m_dominant'] = daily_wind_direction_10m_dominant
 
 daily_dataframe = pd.DataFrame(data = daily_data)
 
