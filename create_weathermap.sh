@@ -30,6 +30,9 @@ do
     # Rain map (for dashboard display)
     python rain_map.py
 
+    # Send images to display computer (script not in repository)
+    ./scp_images.sh
+
     end=`date +%s`
 
     elapsed=$((end - start))

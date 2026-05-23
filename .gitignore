@@ -219,4 +219,5 @@ output
 *.nc
 nohup.out
 *nohup
+scp_images.sh
 
