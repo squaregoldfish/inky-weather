@@ -17,27 +17,18 @@ do
     current_hour=$(date +%H)
 
     if [[ "$current_hour" != "$last_hour" ]]; then
-        # Get Open Meteo forecast
-        python get_open_meteo.py
-
         # Get pressure data and preprocess
-        #python get_pressure.py
-        #wgrib2 pressure.grib2 -netcdf pressure.nc
+        python get_pressure.py
+        wgrib2 pressure.grib2 -netcdf pressure.nc
     fi
 
     last_hour=$current_hour
 
     # Draw main weather map
-    #python weather_map.py
+    python weather_map.py
 
     # Rain map (for dashboard display)
-    #python rain_map.py
-
-    # Retrieve Netatmo
-    python get_netatmo.py
-
-    # Draw dashboards
-    python dashboard.py
+    python rain_map.py
 
     end=`date +%s`
 
