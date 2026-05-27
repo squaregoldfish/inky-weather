@@ -111,7 +111,7 @@ if TIMINGS:
     print('Draw Pressure')
     t0 = pc()
 
-clevs = range(940, 1050, 4)
+clevs = range(940, 1050, 2)
 cs = ax.contour(pressure.longitude, pressure.latitude, smoothed_pressure, levels=clevs, 
                 colors='#000000', linewidths=2, zorder=9, transform=ccrs.PlateCarree())
 ax.clabel(cs, inline=True, fontsize=8)
