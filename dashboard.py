@@ -495,17 +495,25 @@ def draw_last_netatmo_time(canvas, times):
     minutes = int(remainder / 60)
     secs = remainder - (minutes * 60)
 
+    out_of_date = False
+
     if days > 0:
-        result = f'{days}d {' ' if hours < 10 else ''}{hours}:{minutes:02}:{secs:02}'
+        result = f'{days}d {' ' if hours < 10 else ''}{hours}:{minutes:02}:{int(secs):02}'
+        out_of_date = True
     else:
+        if hours > 0:
+            out_of_date = True
+
         result = ''
         result += f'{hours}:'
         if minutes < 10:
             result += '0'
         result += f'{minutes}'
 
+    text_color = 'black' if not out_of_date else 'red'
+
     canvas.append(draw.Text(result, 15, 3, 15,
-        font_family='Noto Sans', font_weight='Bold', fill='rgb(100, 100, 100)', stroke_width=0, text_anchor='start'))
+        font_family='Noto Sans', font_weight='Bold', fill=text_color, stroke_width=0, text_anchor='start'))
 
 def wind_barbs(ax, xs, speeds, directions):
     u = list()
