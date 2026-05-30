@@ -90,7 +90,7 @@ if TIMINGS:
 
 # Countries and coasts
 ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries',
-    '10m', linewidth=0.5, linestyle='dotted', ec='#000000', fc='#96ff96'))
+    '10m', linewidth=0.5, linestyle='dashed', ec='#000000', fc='#96ff96'))
 
 if TIMINGS:
     print(pc() - t0)
@@ -123,7 +123,7 @@ smoothed_pressure = gaussian_filter(P_box, sigma=1)
 
 clevs = range(940, 1050, 2)
 cs = ax.contour(LON2, LAT2, smoothed_pressure, levels=clevs, 
-                colors='#555555', linewidths=1.5,
+                colors='#555555', linewidths=2,
                 zorder=9, transform=ccrs.PlateCarree())
 ax.clabel(cs, inline=True, fontsize=8)
 
@@ -144,10 +144,10 @@ V = vwnd.values
 
 LON, LAT = np.meshgrid(lon, lat)
 
-i_step = 8
-j_step = 10
-iy = np.arange(-3, LON.shape[0], i_step)
-ix = np.arange(1, LON.shape[1], j_step)
+i_step = 5
+j_step = 8
+iy = np.arange(0, LON.shape[0], i_step)
+ix = np.arange(3, LON.shape[1], j_step)
 
 LON_s = LON[np.ix_(iy, ix)]
 LAT_s = LAT[np.ix_(iy, ix)]
@@ -161,7 +161,8 @@ y = LAT_s[mask].ravel()
 u = U_s[mask].ravel()
 v = V_s[mask].ravel()
 
-ax.barbs(x, y, u, v, pivot='middle', length=6, zorder=50, transform=ccrs.PlateCarree())
+ax.barbs(x, y, u, v, pivot='middle', length=6, zorder=50,
+    barbcolor='#0000ff', flagcolor='#ff0000', transform=ccrs.PlateCarree())
 
 if TIMINGS:
     print(pc() - t0)
