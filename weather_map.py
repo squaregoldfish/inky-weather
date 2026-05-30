@@ -90,7 +90,7 @@ if TIMINGS:
 
 # Countries and coasts
 ax.add_feature(cfeature.NaturalEarthFeature('cultural', 'admin_0_countries',
-    '10m', linewidth=0.5, ec='#000000', fc='#96ff96'))
+    '10m', linewidth=0.5, linestyle='dotted', ec='#000000', fc='#96ff96'))
 
 if TIMINGS:
     print(pc() - t0)
@@ -127,7 +127,8 @@ smoothed_pressure = gaussian_filter(P_box, sigma=1)
 
 clevs = range(940, 1050, 2)
 cs = ax.contour(LON2, LAT2, smoothed_pressure, levels=clevs, 
-                colors='#000000', linewidths=1.5, zorder=9, transform=ccrs.PlateCarree())
+                colors='#555555', linewidths=1,
+                zorder=9, transform=ccrs.PlateCarree())
 ax.clabel(cs, inline=True, fontsize=8)
 
 if TIMINGS:
@@ -149,8 +150,8 @@ LON, LAT = np.meshgrid(lon, lat)
 
 i_step = 8
 j_step = 10
-iy = np.arange(0, LON.shape[0], i_step)
-ix = np.arange(0, LON.shape[1], j_step)
+iy = np.arange(-3, LON.shape[0], i_step)
+ix = np.arange(1, LON.shape[1], j_step)
 
 LON_s = LON[np.ix_(iy, ix)]
 LAT_s = LAT[np.ix_(iy, ix)]
@@ -164,7 +165,7 @@ y = LAT_s[mask].ravel()
 u = U_s[mask].ravel()
 v = V_s[mask].ravel()
 
-ax.barbs(x, y, u, v, length=7.5, zorder=50, transform=ccrs.PlateCarree())
+ax.barbs(x, y, u, v, pivot='middle', length=6, zorder=50, transform=ccrs.PlateCarree())
 
 if TIMINGS:
     print(pc() - t0)
@@ -181,9 +182,12 @@ if TIMINGS:
     print('Save PNG')
     t0 = pc()
 
-ax.text(0.992, 0.047, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), transform=ax.transAxes,
+ax.text(0.993, 0.038, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), transform=ax.transAxes,
     ha='right', va='top', fontfamily='Noto Sans', fontweight='bold', fontsize=12, color='#323232',
-    zorder=75, bbox=dict(facecolor='white', edgecolor='white', alpha=0.9))
+    zorder=75, bbox=dict(facecolor='white', edgecolor='white'))
+
+for spine in ax.spines.values():
+    spine.set_zorder(1000)
 
 # Save
 plt.savefig('weather_map.new.png', bbox_inches='tight', pad_inches=0.02)
