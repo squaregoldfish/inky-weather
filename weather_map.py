@@ -99,14 +99,10 @@ if TIMINGS:
 
 ecmwf = xr.load_dataset('ecmwf.nc')
 
-pressure = ecmwf['PRES_meansealevel'][0] / 100
-
-if TIMINGS:
-    print(pc() - t0)
-    print('Pressure')
-    t0 = pc()
 
 # Pressure
+pressure = ecmwf['PRES_meansealevel'][0] / 100
+
 lon = pressure.longitude.values
 lat = pressure.latitude.values
 
