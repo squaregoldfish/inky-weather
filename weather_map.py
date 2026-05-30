@@ -123,7 +123,7 @@ smoothed_pressure = gaussian_filter(P_box, sigma=1)
 
 clevs = range(940, 1050, 2)
 cs = ax.contour(LON2, LAT2, smoothed_pressure, levels=clevs, 
-                colors='#555555', linewidths=1,
+                colors='#555555', linewidths=1.5,
                 zorder=9, transform=ccrs.PlateCarree())
 ax.clabel(cs, inline=True, fontsize=8)
 
