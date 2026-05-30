@@ -71,7 +71,8 @@ figsize_x = 10.26
 figsize_y = figsize_x * fig_ratio
 
 # Create a map with PlateCarree projection
-fig, ax = plt.subplots(figsize=[figsize_x, figsize_y], subplot_kw={'projection': PROJECTION})
+fig, ax = plt.subplots(figsize=[figsize_x, figsize_y],
+    subplot_kw={'projection': PROJECTION})
 ax.set_extent([min_lon, max_lon, min_lat, max_lat], ccrs.PlateCarree())
 
 if TIMINGS:
@@ -96,25 +97,74 @@ if TIMINGS:
     print('Pressure')
     t0 = pc()
 
+ecmwf = xr.load_dataset('ecmwf.nc')
+
+pressure = ecmwf['PRES_meansealevel'][0] / 100
+
+if TIMINGS:
+    print(pc() - t0)
+    print('Pressure')
+    t0 = pc()
+
 # Pressure
-pressure = xr.load_dataset('pressure.nc')['PRES_meansealevel'][0] / 100
+lon = pressure.longitude.values
+lat = pressure.latitude.values
 
-if TIMINGS:
-    print(pc() - t0)
-    print('Smooth Pressure')
-    t0 = pc()
+pres_min_lon = min_lon - 20
+pres_max_lon = max_lon + 20
+pres_min_lat = min_lat - 10
+prex_max_lat = max_lat + 10
 
-smoothed_pressure = gaussian_filter(pressure.values, sigma=1)
+lon_idx = np.where((lon >= pres_min_lon) & (lon <= pres_max_lon))[0]
+lat_idx = np.where((lat >= pres_min_lat) & (lat <= prex_max_lat))[0]
 
-if TIMINGS:
-    print(pc() - t0)
-    print('Draw Pressure')
-    t0 = pc()
+lon_box = lon[lon_idx]
+lat_box = lat[lat_idx]
+P_box = pressure.values[np.ix_(lat_idx, lon_idx)]
+LON2, LAT2 = np.meshgrid(lon_box, lat_box)
+
+smoothed_pressure = gaussian_filter(P_box, sigma=1)
 
 clevs = range(940, 1050, 2)
-cs = ax.contour(pressure.longitude, pressure.latitude, smoothed_pressure, levels=clevs, 
-                colors='#000000', linewidths=2, zorder=9, transform=ccrs.PlateCarree())
+cs = ax.contour(LON2, LAT2, smoothed_pressure, levels=clevs, 
+                colors='#000000', linewidths=1.5, zorder=9, transform=ccrs.PlateCarree())
 ax.clabel(cs, inline=True, fontsize=8)
+
+if TIMINGS:
+    print(pc() - t0)
+    print('Draw Wind')
+    t0 = pc()
+
+uwnd = ecmwf['UGRD_10maboveground'][0]
+vwnd = ecmwf['VGRD_10maboveground'][0]
+
+# Wind
+lon = uwnd['longitude'].values
+lat = uwnd['latitude'].values
+
+U = uwnd.values
+V = vwnd.values
+
+LON, LAT = np.meshgrid(lon, lat)
+
+i_step = 8
+j_step = 10
+iy = np.arange(0, LON.shape[0], i_step)
+ix = np.arange(0, LON.shape[1], j_step)
+
+LON_s = LON[np.ix_(iy, ix)]
+LAT_s = LAT[np.ix_(iy, ix)]
+U_s = U[np.ix_(iy, ix)]
+V_s = V[np.ix_(iy, ix)]
+
+mask = (LON_s >= min_lon) & (LON_s <= max_lon) & (LAT_s >= min_lat) & (LAT_s <= max_lat)
+
+x = LON_s[mask].ravel()
+y = LAT_s[mask].ravel()
+u = U_s[mask].ravel()
+v = V_s[mask].ravel()
+
+ax.barbs(x, y, u, v, length=7.5, zorder=50, transform=ccrs.PlateCarree())
 
 if TIMINGS:
     print(pc() - t0)
