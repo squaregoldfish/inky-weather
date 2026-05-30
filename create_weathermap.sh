@@ -17,9 +17,9 @@ do
     current_hour=$(date +%H)
 
     if [[ "$current_hour" != "$last_hour" ]]; then
-        # Get pressure data and preprocess
-        python get_pressure.py
-        wgrib2 pressure.grib2 -netcdf pressure.nc
+        # Get ECMWF data and preprocess
+        python get_ecmwf.py
+        wgrib2 ecmwf.grib2 -netcdf ecmwf.nc
     fi
 
     last_hour=$current_hour
