@@ -35,6 +35,10 @@ MAIN_COLOR = '#FF0000'
 SUNRISE = '#ff9900'
 SUNSET = '#ff2200'
 
+BARB_BUFFER = 0.8
+TEMPERATURE_PADDING = 0.5
+
+
 FONT = 'Roboto Mono'
 
 HUMIDITY_SCALE = [
@@ -217,8 +221,6 @@ def gauge_chart(data, unit, scale):
         ax.text(1.04, -0.20, data[label2_src][0], ha='right', va='center',
                 fontsize=38, fontweight='regular', color=data[label2_src][1])
         
-
-
     ax.set_xlim(-1.15, 1.15)
     ax.set_ylim(-0.35, 1.15)
     ax.axis('off')
@@ -265,16 +267,13 @@ def update_temp_db(time, temp):
         db.execute('DELETE FROM netatmo_temp WHERE timestamp < ?', (one_day_ago,))
 
     return result
-        
 
 
 def outdoor_temperature(d, module):
     temp = module['Temperature']
-
     min_temp, max_temp = update_temp_db(module['time_utc'], temp)
 
     int_part, decimal_part = split_number(temp)    
-
     d.append(draw.Text(int_part, 122, 148, 115, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
     d.append(draw.Text('.', 55, 143, 115, font_weight='Bold', fill='black', stroke='black'))
     d.append(draw.Text(decimal_part, 43, 168, 115, font_weight='Bold', fill='black', stroke='black'))
@@ -311,7 +310,6 @@ def pressure(d, module):
     d.append(draw.Text("mb", 18, 433, 38, font_weight='Regular', fill=pressure_color, stroke_width=0, text_anchor='end'))
 
 def pressure_trend(d, module):
-
     MAX_ARROW_X = 380
     MIN_ARROW_X = 274
     ARROW_Y = 99
@@ -384,8 +382,9 @@ def precip_plot(ax, dates, precip, bar_width, min_y):
     elif (precip <= min_y).all():
         ax.set_ylim((0, min_y))
 
+    ax.set_ylim(0, ax.get_ylim()[1] * (1 / BARB_BUFFER))
+
 def indoor_temp(y, icon, module):
-    
     temperature = module['Temperature']
     humidity = module['Humidity']
     co2 = module['CO2']
@@ -537,16 +536,22 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     temperature_plot(ax, forecast['date'], forecast['temperature_2m'], False, 'black', 3)
 
     range = max(forecast['temperature_2m']) - min(forecast['temperature_2m'])
-    if range < 5:
+
+    if range >= 5:
+        range_min = min(forecast['temperature_2m']) - TEMPERATURE_PADDING
+        range_max = max(forecast['temperature_2m']) + TEMPERATURE_PADDING
+    else:
         midpoint = min(forecast['temperature_2m']) + (range / 2)
         range_min = midpoint - 2.5
         range_max = midpoint + 2.5
 
         if range >= 4.75:
-            range_min -= 0.2
-            range_max += 0.2
+            range_min -= TEMPERATURE_PADDING
+            range_max += TEMPERATURE_PADDING
 
-        ax.set_ylim([range_min, range_max])
+    plot_range = range_max - range_min
+    range_max = range_min + (plot_range * (1 / BARB_BUFFER))    
+    ax.set_ylim([range_min, range_max])
 
     precip_hour = ax.twinx()
     ax.set_zorder(precip_hour.get_zorder()+1)
@@ -577,7 +582,11 @@ def daily_forecast(canvas, forecast):
     temperature_plot(ax, forecast['date'], forecast['temperature_2m_max'], True, 'red', 2)
 
     range = max(daily['temperature_2m_max']) - min(daily['temperature_2m_min'])
-    if range < 5:
+    
+    if range >= 5:
+        range_min = min(daily['temperature_2m_min']) - TEMPERATURE_PADDING
+        range_max = max(daily['temperature_2m_max']) + TEMPERATURE_PADDING
+    else:
         midpoint = min(daily['temperature_2m_min']) + (range / 2)
         range_min = midpoint - 2.5
         range_max = midpoint + 2.5
@@ -586,7 +595,9 @@ def daily_forecast(canvas, forecast):
             range_min -= 0.2
             range_max += 0.2
 
-        ax.set_ylim([range_min, range_max])
+    plot_range = range_max - range_min
+    range_max = range_min + (plot_range * (1 / BARB_BUFFER))    
+    ax.set_ylim([range_min, range_max])
 
     precip_day = ax.twinx()
     ax.set_zorder(precip_day.get_zorder()+1)
