@@ -679,7 +679,7 @@ d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12,
 
 # Draw basic Netatmo stuff (no rain)
 draw_netatmo_outdoor(d, outdoor_module, bedroom_module)
-draw_netatmo_indoor(d, bedroom_module, living_room_module)
+draw_netatmo_indoor(d, living_room_module, bedroom_module)
 
 # Netatmo last seen time
 draw_last_netatmo_time(d, (bedroom_module['time_utc'], outdoor_module['time'], living_room_module['time'], rain_module['time']))
