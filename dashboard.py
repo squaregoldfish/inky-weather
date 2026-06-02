@@ -42,24 +42,10 @@ TEMPERATURE_PADDING = 0.5
 FONT = 'Roboto Mono'
 
 HUMIDITY_SCALE = [
-    {"value":   0, "color": [228,  78,  93]},
-    {"value":  10, "color": [197, 106, 125]},
-    {"value":  20, "color": [160, 138, 166]},
-    {"value":  30, "color": [130, 173, 209]},
-    {"value":  40, "color": [ 97, 183, 218]},
-    {"value":  50, "color": [104, 206, 247]},
-    {"value":  60, "color": [102, 203, 242]},
-    {"value":  70, "color": [ 96, 178, 234]},
-    {"value":  80, "color": [ 89, 154, 233]},
-    {"value":  90, "color": [ 86, 131, 232]},
-    {"value": 100, "color": [ 79, 105, 216]}
-]
-
-HUMIDITY_SCALE = [
-    {"value":   0, "color": [255,   0,   0]},
-    {"value":  25, "color": [255, 100, 100]},
-    {"value":  50, "color": [100, 255, 255]},
-    {"value":  75, "color": [ 50, 255, 255]},
+    {"value":  20, "color": [255,   0,   0]},
+    {"value":  40, "color": [255, 100, 100]},
+    {"value":  60, "color": [100, 255, 255]},
+    {"value":  80, "color": [ 50, 255, 255]},
     {"value": 100, "color": [  0,   0, 255]}
 ]
 
@@ -633,86 +619,87 @@ with open('config.toml') as cin:
 with open('netatmo_weather.json') as nin:
     netatmo = json.load(nin)
 
-bedroom_module = netatmo['devices'][0]['dashboard_data']
-outdoor_module = None
-living_room_module = None
-rain_module = None
+if 'dashboard_data' in netatmo['devices'][0]:
+    bedroom_module = netatmo['devices'][0]['dashboard_data']
+    outdoor_module = None
+    living_room_module = None
+    rain_module = None
 
-for module in netatmo['devices'][0]['modules']:
-    module_name = module['module_name']
+    for module in netatmo['devices'][0]['modules']:
+        module_name = module['module_name']
 
-    if module_name == 'Outdoor Module':
-        outdoor_module = module['dashboard_data']
-        outdoor_module['battery'] = module['battery_percent']
-        outdoor_module['time'] = module['last_seen']
-    elif module_name == 'Indoor 1':
-        living_room_module = module['dashboard_data']
-        living_room_module['battery'] = module['battery_percent']
-        living_room_module['time'] = module['last_seen']
-    elif module_name == 'Rain':
-        rain_module = module['dashboard_data']
-        rain_module['battery'] = module['battery_percent']
-        rain_module['time'] = module['last_seen']
+        if module_name == 'Outdoor Module':
+            outdoor_module = module['dashboard_data']
+            outdoor_module['battery'] = module['battery_percent']
+            outdoor_module['time'] = module['last_seen']
+        elif module_name == 'Indoor 1':
+            living_room_module = module['dashboard_data']
+            living_room_module['battery'] = module['battery_percent']
+            living_room_module['time'] = module['last_seen']
+        elif module_name == 'Rain':
+            rain_module = module['dashboard_data']
+            rain_module['battery'] = module['battery_percent']
+            rain_module['time'] = module['last_seen']
 
-# Load and setup meteo forecast
-with sqlite3.connect('weather_display.sqlite') as db:
-    hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
-    daily = pd.read_sql('SELECT * FROM open_meteo_daily', db, parse_dates='date')
+    # Load and setup meteo forecast
+    with sqlite3.connect('weather_display.sqlite') as db:
+        hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
+        daily = pd.read_sql('SELECT * FROM open_meteo_daily', db, parse_dates='date')
 
-current_hour = datetime.now(TIMEZONE).replace(minute=0, second=0, microsecond=0)
-plus_24_hours = current_hour + pd.Timedelta(hours=24)
-hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= plus_24_hours)].copy()
+    current_hour = datetime.now(TIMEZONE).replace(minute=0, second=0, microsecond=0)
+    plus_24_hours = current_hour + pd.Timedelta(hours=24)
+    hourly = hourly[(hourly['date'] >= current_hour) & (hourly['date'] <= plus_24_hours)].copy()
 
-today_forecast = daily.iloc[0]
-daily = daily[1:6].copy()
+    today_forecast = daily.iloc[0]
+    daily = daily[1:6].copy()
 
-# Sun info
-sunrise, sunset = get_sun(config['location'])
+    # Sun info
+    sunrise, sunset = get_sun(config['location'])
 
-# Prepare canvas
-d = draw.Drawing(800, 480, origin=(0, 0), font_family=FONT)
-r = draw.Rectangle(0, 0, 800, 480, fill="white", stroke=None)
-d.append(r)
+    # Prepare canvas
+    d = draw.Drawing(800, 480, origin=(0, 0), font_family=FONT)
+    r = draw.Rectangle(0, 0, 800, 480, fill="white", stroke=None)
+    d.append(r)
 
-# Timestamp
-d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12,
-    font_family='Noto Sans', font_weight='Bold', fill='rgb(50, 50, 50)', stroke_width=0, text_anchor='end'))
+    # Timestamp
+    d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12,
+        font_family='Noto Sans', font_weight='Bold', fill='rgb(50, 50, 50)', stroke_width=0, text_anchor='end'))
 
-# Draw basic Netatmo stuff (no rain)
-draw_netatmo_outdoor(d, outdoor_module, bedroom_module)
-draw_netatmo_indoor(d, living_room_module, bedroom_module)
+    # Draw basic Netatmo stuff (no rain)
+    draw_netatmo_outdoor(d, outdoor_module, bedroom_module)
+    draw_netatmo_indoor(d, living_room_module, bedroom_module)
 
-# Netatmo last seen time
-draw_last_netatmo_time(d, (bedroom_module['time_utc'], outdoor_module['time'], living_room_module['time'], rain_module['time']))
+    # Netatmo last seen time
+    draw_last_netatmo_time(d, (bedroom_module['time_utc'], outdoor_module['time'], living_room_module['time'], rain_module['time']))
 
-# Netatmo Battery Status
-battery(436, 'O', outdoor_module['battery'])
-battery(453, 'R', rain_module['battery'])
-battery(470, 'I', living_room_module['battery'])
+    # Netatmo Battery Status
+    battery(436, 'O', outdoor_module['battery'])
+    battery(453, 'R', rain_module['battery'])
+    battery(470, 'I', living_room_module['battery'])
 
-# Hourly forecast plot
-hourly_forecast(d, hourly, sunrise, sunset)
+    # Hourly forecast plot
+    hourly_forecast(d, hourly, sunrise, sunset)
 
-# Rain info
-forecast_rain = get_remaining_precip(hourly)
-rain(d, rain_module, forecast_rain)
+    # Rain info
+    forecast_rain = get_remaining_precip(hourly)
+    rain(d, rain_module, forecast_rain)
 
-# Sun info
-sun_info(d, sunrise, sunset)
+    # Sun info
+    sun_info(d, sunrise, sunset)
 
-# Daily forecast plot
-daily_forecast(d, daily)
-d.save_png('dashboard_forecast.new.png')
-os.replace('dashboard_forecast.new.png', 'dashboard_forecast.png')
+    # Daily forecast plot
+    daily_forecast(d, daily)
+    d.save_png('dashboard_forecast.new.png')
+    os.replace('dashboard_forecast.new.png', 'dashboard_forecast.png')
 
-d.append(draw.Rectangle(410, 130, 390, 255, fill="white", stroke=None))
+    d.append(draw.Rectangle(410, 130, 390, 255, fill="white", stroke=None))
 
-# Rain map
-d.append(draw.Image(415, 143, 374, 218, 'rain_map.png', embed=True))
-d.save_png('dashboard_rain.new.png')
-os.replace('dashboard_rain.new.png', 'dashboard_rain.png')
+    # Rain map
+    d.append(draw.Image(415, 143, 374, 218, 'rain_map.png', embed=True))
+    d.save_png('dashboard_rain.new.png')
+    os.replace('dashboard_rain.new.png', 'dashboard_rain.png')
 
-if os.path.isdir('output'):
-    shutil.copy('dashboard_forecast.png', 'output/dashboard_forecast.png')
-    shutil.copy('dashboard_rain.png', 'output/dashboard_rain.png')
+    if os.path.isdir('output'):
+        shutil.copy('dashboard_forecast.png', 'output/dashboard_forecast.png')
+        shutil.copy('dashboard_rain.png', 'output/dashboard_rain.png')
 
