@@ -144,10 +144,10 @@ V = vwnd.values
 
 LON, LAT = np.meshgrid(lon, lat)
 
-i_step = 5
-j_step = 8
-iy = np.arange(0, LON.shape[0], i_step)
-ix = np.arange(3, LON.shape[1], j_step)
+i_step = 7
+j_step = 12
+iy = np.arange(5, LON.shape[0], i_step)
+ix = np.arange(0, LON.shape[1], j_step)
 
 LON_s = LON[np.ix_(iy, ix)]
 LAT_s = LAT[np.ix_(iy, ix)]
