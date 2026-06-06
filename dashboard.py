@@ -367,7 +367,9 @@ def temperature_plot(ax, dates, temps, markers, color, linewidth):
 def precip_plot(ax, dates, precip, probability, bar_width, min_y):
     
     ax.bar(dates, precip, color='#9696ff', width=bar_width)
-    ax.scatter(dates, precip * probability, marker='_', s=bar_width * 1000, c='#0000ff')
+    
+    sizes = [1000 * bar_width if x > 0 else 0 for x in precip]
+    ax.scatter(dates, precip * probability, marker='_', s=sizes, c='#0000ff')
     
     if (precip < 0.01).all():
         ax.set_yticks([])
