@@ -2,7 +2,7 @@ from astral import LocationInfo
 from astral.sun import sun
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from datetime import datetime, date, timedelta, timezone
+from datetime import datetime, date, timedelta, timezone, UTC
 import drawsvg as draw
 import io
 import json
@@ -10,6 +10,7 @@ import math
 import matplotlib.dates as mdates
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+from matplotlib.dates import DayLocator
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import MultipleLocator
 import numpy as np
@@ -22,6 +23,8 @@ import time
 import toml
 
 TIMEZONE = pytz.timezone('Europe/Brussels')
+now = datetime.now().astimezone(TIMEZONE)
+TIMEZONE_OFFSET = int(now.utcoffset().total_seconds() / 3600)
 
 MIN_MAX_COLOR = 'black'
 MAX_ARROW_ON = 'rgb(255, 0, 0)'
@@ -565,8 +568,10 @@ def daily_forecast(canvas, forecast):
     plt.rc('font', family=FONT, weight='regular', size=10)
     fig, ax = plt.subplots(figsize=(4, 2.75))
 
-    temperature_plot(ax, forecast['date'], forecast['temperature_2m_min'], True, 'blue', 2)
-    temperature_plot(ax, forecast['date'], forecast['temperature_2m_max'], True, 'red', 2)
+    dates = pd.to_datetime(forecast['date']).dt.tz_convert('UTC') + timedelta(hours=TIMEZONE_OFFSET)
+
+    temperature_plot(ax, dates, forecast['temperature_2m_min'], True, 'blue', 2)
+    temperature_plot(ax, dates, forecast['temperature_2m_max'], True, 'red', 2)
 
     range = max(daily['temperature_2m_max']) - min(daily['temperature_2m_min'])
     
@@ -590,11 +595,11 @@ def daily_forecast(canvas, forecast):
     ax.set_zorder(precip_day.get_zorder()+1)
     ax.patch.set_visible(False)
 
-    precip_plot(precip_day, forecast['date'], forecast['precipitation_sum'], 0.5, 5)
+    precip_plot(precip_day, dates, forecast['precipitation_sum'], 0.5, 5)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=TIMEZONE))
-    ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.xaxis.set_major_locator(DayLocator())
 
-    wind_barbs(ax, forecast['date'], list(forecast['wind_speed_10m_max']), list(forecast['wind_direction_10m_dominant']))
+    wind_barbs(ax, dates, list(forecast['wind_speed_10m_max']), list(forecast['wind_direction_10m_dominant']))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
