@@ -22,8 +22,8 @@ url = 'https://api.open-meteo.com/v1/forecast'
 params = {
     'latitude': config['location']['latitude'],
     'longitude': config['location']['longitude'],
-    'daily': ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum', 'wind_speed_10m_max', 'wind_direction_10m_dominant'],
-    'hourly': ['temperature_2m', 'precipitation', 'wind_direction_10m', 'wind_speed_10m'],
+    'daily': ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum', 'precipitation_probability_max', 'wind_speed_10m_max', 'wind_direction_10m_dominant'],
+    'hourly': ['temperature_2m', 'precipitation', 'precipitation_probability', 'wind_direction_10m', 'wind_speed_10m'],
     'timezone': 'Europe/Berlin',
 }
 
@@ -35,8 +35,9 @@ response = responses[0]
 hourly = response.Hourly()
 hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
 hourly_precipitation = hourly.Variables(1).ValuesAsNumpy()
-hourly_wind_direction_10m = hourly.Variables(2).ValuesAsNumpy()
-hourly_wind_speed_10m = hourly.Variables(3).ValuesAsNumpy()
+hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
+hourly_wind_direction_10m = hourly.Variables(3).ValuesAsNumpy()
+hourly_wind_speed_10m = hourly.Variables(4).ValuesAsNumpy()
 
 
 hourly_data = {'date': pd.date_range(
@@ -49,6 +50,7 @@ hourly_data = {'date': pd.date_range(
 
 hourly_data['temperature_2m'] = hourly_temperature_2m
 hourly_data['precipitation'] = hourly_precipitation
+hourly_data['precipitation_probability'] = hourly_precipitation
 hourly_data['wind_direction_10m'] = hourly_wind_direction_10m
 hourly_data['wind_speed_10m'] = hourly_wind_speed_10m
 
@@ -59,8 +61,9 @@ daily = response.Daily()
 daily_temperature_2m_max = daily.Variables(0).ValuesAsNumpy()
 daily_temperature_2m_min = daily.Variables(1).ValuesAsNumpy()
 daily_precipitation_sum = daily.Variables(2).ValuesAsNumpy()
-daily_wind_speed_10m_max = daily.Variables(3).ValuesAsNumpy()
-daily_wind_direction_10m_dominant = daily.Variables(4).ValuesAsNumpy()
+daily_precipitation_probability = daily.Variables(3).ValuesAsNumpy()
+daily_wind_speed_10m_max = daily.Variables(4).ValuesAsNumpy()
+daily_wind_direction_10m_dominant = daily.Variables(5).ValuesAsNumpy()
 
 daily_data = {'date': pd.date_range(
     start = pd.to_datetime(daily.Time(), unit = 's', utc = True),
@@ -72,6 +75,7 @@ daily_data = {'date': pd.date_range(
 daily_data['temperature_2m_max'] = daily_temperature_2m_max
 daily_data['temperature_2m_min'] = daily_temperature_2m_min
 daily_data['precipitation_sum'] = daily_precipitation_sum
+daily_data['precipitation_probability'] = daily_precipitation_probability
 daily_data['wind_speed_10m_max'] = daily_wind_speed_10m_max
 daily_data['wind_direction_10m_dominant'] = daily_wind_direction_10m_dominant
 

@@ -364,8 +364,11 @@ def rain(d, module, forecast):
 def temperature_plot(ax, dates, temps, markers, color, linewidth):
     ax.plot(dates, temps, color=color, linewidth=linewidth, marker='o', markersize=6 if markers else 0)
 
-def precip_plot(ax, dates, precip, bar_width, min_y):
+def precip_plot(ax, dates, precip, probability, bar_width, min_y):
+    
     ax.bar(dates, precip, color='#9696ff', width=bar_width)
+    ax.scatter(dates, precip * probability, marker='_', s=bar_width * 1000, c='#0000ff')
+    
     if (precip < 0.01).all():
         ax.set_yticks([])
     elif (precip <= min_y).all():
@@ -546,7 +549,8 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     ax.set_zorder(precip_hour.get_zorder()+1)
     ax.patch.set_visible(False)
 
-    precip_plot(precip_hour, forecast['date'], forecast['precipitation'], 0.025, 0.5)
+    precip_plot(precip_hour, forecast['date'], forecast['precipitation'],
+        forecast['precipitation_probability'], 0.025, 0.5)
     precip_hour.axvline(sunrise, color=SUNRISE, linewidth=2).set_zorder(-100)
     precip_hour.axvline(sunset, color=SUNSET, linewidth=2).set_zorder(-100)
 
@@ -595,7 +599,8 @@ def daily_forecast(canvas, forecast):
     ax.set_zorder(precip_day.get_zorder()+1)
     ax.patch.set_visible(False)
 
-    precip_plot(precip_day, dates, forecast['precipitation_sum'], 0.5, 5)
+    precip_plot(precip_day, dates, forecast['precipitation_sum'],
+        forecast['precipitation_probability'] * 0.01, 0.5, 5)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=TIMEZONE))
     ax.xaxis.set_major_locator(DayLocator())
 
