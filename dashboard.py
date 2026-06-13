@@ -388,9 +388,11 @@ def indoor_temp(y, icon, module):
 
     int_part, decimal_part = split_number(temperature)
 
+    offset = 2 if int_part[-1] == '1' else 0
+
     temperature_color='black'
 
-    d.append(draw.Text(int_part, 28, 98, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(int_part, 28, 98 - offset, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
     d.append(draw.Text('.', 23, 96, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
     d.append(draw.Text(decimal_part, 23, 107, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
     d.append(draw.Text('°', 23, 121, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
@@ -424,15 +426,23 @@ def get_sun(position):
     return(sunrise, sunset)
 
 def sun_info(d, sunrise, sunset):
+    sunrise_hour = sunrise.strftime("%H")
+    sunrise_minute = sunrise.strftime("%M")
+    sunset_hour = sunset.strftime("%H")
+    sunset_minute = sunset.strftime("%M")
+
+    sunrise_hour_offset = 2 if sunrise_hour[-1] == '1' else 0
+    sunset_hour_offset = 2 if sunset_hour[-1] == '1' else 0
+ 
     d.append(draw.Image(540, 402, 45, 45, 'sunrise.svg', embed=True))
-    d.append(draw.Text(sunrise.strftime("%H"), 35, 632, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(sunrise_hour, 35, 632 - sunrise_hour_offset, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
     d.append(draw.Text(':', 35, 629, 431, font_weight='Bold', fill=SUNRISE, stroke_width=0))
-    d.append(draw.Text(sunrise.strftime("%M"), 35, 645, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Text(sunrise_minute, 35, 645, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0))
 
     d.append(draw.Image(540, 442, 45, 45, 'sunset.svg', embed=True))
-    d.append(draw.Text(sunset.strftime("%H"), 35, 632, 471, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(sunset_hour, 35, 632 - sunset_hour_offset, 471, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
     d.append(draw.Text(':', 35, 629, 469, font_weight='Bold', fill=SUNSET, stroke_width=0))
-    d.append(draw.Text(sunset.strftime("%M"), 35, 645, 471, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Text(sunset_minute, 35, 645, 471, font_weight='Bold', fill=SUNSET, stroke_width=0))
 
 
 def draw_netatmo_outdoor(canvas, outdoor_module, bedroom_module):
