@@ -239,7 +239,8 @@ def split_number(number):
 def update_temp_db(time, temp):
 
     with sqlite3.connect('weather_display.sqlite') as db:
-        db.execute('INSERT INTO netatmo_temp (timestamp, temperature) VALUES (?, ?)', (time, temp))
+        db.execute('INSERT INTO netatmo_temp (timestamp, temperature) VALUES (?, ?)',
+            (time, temp))
 
         one_day_ago = int(datetime.now(timezone.utc).timestamp()) - 86400
 
@@ -263,10 +264,14 @@ def outdoor_temperature(d, module):
     min_temp, max_temp = update_temp_db(module['time_utc'], temp)
 
     int_part, decimal_part = split_number(temp)    
-    d.append(draw.Text(int_part, 122, 148, 115, font_weight='Bold', fill='black', stroke='black', text_anchor='end'))
-    d.append(draw.Text('.', 55, 143, 115, font_weight='Bold', fill='black', stroke='black'))
-    d.append(draw.Text(decimal_part, 43, 168, 115, font_weight='Bold', fill='black', stroke='black'))
-    d.append(draw.Text('°C', 30, 154, 47, font_weight='Bold', fill='black', stroke='black'))
+    d.append(draw.Text(int_part, 122, 148, 115, font_weight='Bold',
+        fill='black', stroke='black', text_anchor='end'))
+    d.append(draw.Text('.', 55, 143, 115, font_weight='Bold',
+        fill='black', stroke='black'))
+    d.append(draw.Text(decimal_part, 43, 168, 115, font_weight='Bold',
+        fill='black', stroke='black'))
+    d.append(draw.Text('°C', 30, 154, 47, font_weight='Bold',
+        fill='black', stroke='black'))
 
     # Max/Min and trend
     if 'temp_trend' in module:
@@ -278,14 +283,18 @@ def outdoor_temperature(d, module):
     max = f'{max_temp:.1f}' if max_temp is not None else '--.-'
     max_arrow_color = MAX_ARROW_ON if trend == 'up' else MAX_ARROW_OFF
 
-    d.append(draw.Lines(198, 38, 208, 23, 218, 38, fill=max_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(max, 20, 198, 57, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Lines(198, 38, 208, 23, 218, 38, fill=max_arrow_color,
+        stroke=None, close='true'))
+    d.append(draw.Text(max, 20, 198, 57, font_weight='Regular',
+        fill=MIN_MAX_COLOR, stroke_width=0))
 
     min = f'{min_temp:.1f}' if min_temp is not None else '--.-'
     min_arrow_color = MIN_ARROW_ON if trend == 'down' else MIN_ARROW_OFF
 
-    d.append(draw.Lines(198, 103, 208, 117, 218, 103, fill=min_arrow_color, stroke=None, close='true'))
-    d.append(draw.Text(min, 20, 198, 98, font_weight='Regular', fill=MIN_MAX_COLOR, stroke_width=0))
+    d.append(draw.Lines(198, 103, 208, 117, 218, 103, fill=min_arrow_color,
+        stroke=None, close='true'))
+    d.append(draw.Text(min, 20, 198, 98, font_weight='Regular',
+        fill=MIN_MAX_COLOR, stroke_width=0))
 
 def pressure(d, module):
     pressure = module['Pressure']
@@ -293,10 +302,14 @@ def pressure(d, module):
 
     pressure_color = get_color(pressure, PRESSURE_SCALE, 'rgb')
 
-    d.append(draw.Text(int_part, 50, 408, 60, font_weight='Bold', fill=pressure_color, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text('.', 30, 406, 60, font_weight='Bold', fill=pressure_color, stroke_width=0))
-    d.append(draw.Text(decimal_part, 20, 421, 60, font_weight='Bold', fill=pressure_color, stroke_width=0))
-    d.append(draw.Text("mb", 18, 433, 38, font_weight='Regular', fill=pressure_color, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(int_part, 50, 408, 60, font_weight='Bold',
+        fill=pressure_color, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text('.', 30, 406, 60, font_weight='Bold',
+        fill=pressure_color, stroke_width=0))
+    d.append(draw.Text(decimal_part, 20, 421, 60, font_weight='Bold',
+        fill=pressure_color, stroke_width=0))
+    d.append(draw.Text("mb", 18, 433, 38, font_weight='Regular',
+        fill=pressure_color, stroke_width=0, text_anchor='end'))
 
 def pressure_trend(d, module):
     MAX_ARROW_X = 380
@@ -306,17 +319,21 @@ def pressure_trend(d, module):
     trend = module['pressure_trend']
 
     if trend == 'up':
-        d.append(draw.Lines(MAX_ARROW_X, ARROW_Y, MAX_ARROW_X + 12, ARROW_Y + 6, MAX_ARROW_X, ARROW_Y + 12, fill=MAX_ARROW_ON, stroke=None, close='true'))
+        d.append(draw.Lines(MAX_ARROW_X, ARROW_Y, MAX_ARROW_X + 12, ARROW_Y + 6,
+            MAX_ARROW_X, ARROW_Y + 12, fill=MAX_ARROW_ON, stroke=None, close='true'))
 
     if trend == 'down':
-        d.append(draw.Lines(MIN_ARROW_X, ARROW_Y, MIN_ARROW_X - 12, ARROW_Y + 6, MIN_ARROW_X, ARROW_Y + 12, fill=MIN_ARROW_ON, stroke=None, close='true'))
+        d.append(draw.Lines(MIN_ARROW_X, ARROW_Y, MIN_ARROW_X - 12, ARROW_Y + 6,
+            MIN_ARROW_X, ARROW_Y + 12, fill=MIN_ARROW_ON, stroke=None, close='true'))
 
 def humidity(d, module):
     humidity = module['Humidity']
     humidity_color = get_color(humidity, HUMIDITY_SCALE, 'rgb')
 
-    d.append(draw.Text(str(humidity), 50, 408, 110, font_weight='Bold', fill=humidity_color, stroke_width=0, text_anchor="end"))
-    d.append(draw.Text('%', 30, 413, 111, font_weight='Bold', fill=humidity_color, stroke_width=0))
+    d.append(draw.Text(str(humidity), 50, 408, 110, font_weight='Bold',
+        fill=humidity_color, stroke_width=0, text_anchor="end"))
+    d.append(draw.Text('%', 30, 413, 111, font_weight='Bold',
+        fill=humidity_color, stroke_width=0))
 
 def rain(d, module, forecast):
     hour = round(module['sum_rain_1'], 1)
@@ -333,19 +350,24 @@ def rain(d, module, forecast):
     HEIGHT = 12
     
     if day == 0 and hour == 0 and forecast == 0:
-        d.append(draw.Text('Dry', 60, 635, 80, font_family='Noto Sans', font_weight='Bold', fill='#9696ff', stroke_width=0, text_anchor='center'))
+        d.append(draw.Text('Dry', 60, 635, 80, font_family='Noto Sans',
+            font_weight='Bold', fill='#9696ff', stroke_width=0, text_anchor='center'))
     else:
-        d.append(draw.Text('Rain', 20, START - 3, 50, font_family='Noto Sans', font_weight='Regular', fill=day_color, text_anchor='start'))
+        d.append(draw.Text('Rain', 20, START - 3, 50, font_family='Noto Sans',
+            font_weight='Regular', fill=day_color, text_anchor='start'))
 
         rain_amount = ''
         if hour > 0:
             rain_amount += f'{hour:.1f}/'
         rain_amount += f'{day:.1f}mm'
 
-        d.append(draw.Text(rain_amount, 20, END, 50, font_weight='Regular', fill=day_color, text_anchor='end'))
+        d.append(draw.Text(rain_amount, 20, END, 50, font_weight='Regular',
+            fill=day_color, text_anchor='end'))
 
-        d.append(draw.Text('Forecast', 20, START - 3, 80, font_family='Noto Sans', font_weight='Regular', fill=day_color, text_anchor='start'))
-        d.append(draw.Text(f'{forecast:.1f}mm', 20, END, 80, font_weight='Regular', fill=day_color, text_anchor='end'))
+        d.append(draw.Text('Forecast', 20, START - 3, 80,font_family='Noto Sans',
+            font_weight='Regular', fill=day_color, text_anchor='start'))
+        d.append(draw.Text(f'{forecast:.1f}mm', 20, END, 80,
+            font_weight='Regular', fill=day_color, text_anchor='end'))
 
         total = day + forecast
         tenth_width = WIDTH / (total * 10)
@@ -355,14 +377,18 @@ def rain(d, module, forecast):
         forecast_width = math.ceil(forecast * 10 * tenth_width)
 
         if day_width > 0:
-            d.append(draw.Rectangle(START, TOP, day_width, HEIGHT, fill=day_color, stroke_width=0))       
+            d.append(draw.Rectangle(START, TOP, day_width, HEIGHT,
+                fill=day_color, stroke_width=0))       
         if hour_width > 0:
-            d.append(draw.Rectangle(START + day_width, TOP, hour_width, HEIGHT, fill=hour_color, stroke_width=0))
+            d.append(draw.Rectangle(START + day_width, TOP, hour_width, HEIGHT,
+                fill=hour_color, stroke_width=0))
         if forecast_width > 0:
-            d.append(draw.Rectangle(START + day_width + hour_width, TOP, forecast_width, HEIGHT, fill=forecast_color, stroke_width=0))
+            d.append(draw.Rectangle(START + day_width + hour_width, TOP,
+                forecast_width, HEIGHT, fill=forecast_color, stroke_width=0))
 
 def temperature_plot(ax, dates, temps, markers, color, linewidth):
-    ax.plot(dates, temps, color=color, linewidth=linewidth, marker='o', markersize=6 if markers else 0)
+    ax.plot(dates, temps, color=color, linewidth=linewidth, marker='o',
+        markersize=6 if markers else 0)
 
 def precip_plot(ax, dates, precip, probability, bar_width, min_y):
     
@@ -392,14 +418,20 @@ def indoor_temp(y, icon, module):
 
     temperature_color='black'
 
-    d.append(draw.Text(int_part, 28, 98 - offset, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text('.', 23, 96, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text(decimal_part, 23, 107, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text('°', 23, 121, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
-    d.append(draw.Text('C', 23, 133, y + 2, font_weight='Bold', fill=temperature_color, stroke_width=0))
+    d.append(draw.Text(int_part, 28, 98 - offset, y + 2, font_weight='Bold',
+        fill=temperature_color, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text('.', 23, 96, y + 2, font_weight='Bold',
+        fill=temperature_color, stroke_width=0))
+    d.append(draw.Text(decimal_part, 23, 107, y + 2, font_weight='Bold',
+        fill=temperature_color, stroke_width=0))
+    d.append(draw.Text('°', 23, 121, y + 2, font_weight='Bold',
+        fill=temperature_color, stroke_width=0))
+    d.append(draw.Text('C', 23, 133, y + 2, font_weight='Bold',
+        fill=temperature_color, stroke_width=0))
 
 def battery(y, name, value):
-    d.append(draw.Text(name, 14, 771, y + 5, font_weight="Regular", fill="rgb(50, 50, 50)", stroke_width=0))
+    d.append(draw.Text(name, 14, 771, y + 5, font_weight="Regular",
+        fill="rgb(50, 50, 50)", stroke_width=0))
    
     if value <= 12:
         color = 'rgb(255, 0, 0)'
@@ -415,7 +447,8 @@ def get_sun(position):
     tomorrow = today + timedelta(days=1)
 
     location = LocationInfo(name='Home', region='', timezone=TIMEZONE,
-                        latitude=position['latitude'], longitude=position['longitude'])
+                        latitude=position['latitude'],
+                        longitude=position['longitude'])
 
     today_sun = sun(location.observer, date=today, tzinfo=location.timezone)
     tomorrow_sun = sun(location.observer, date=tomorrow, tzinfo=location.timezone)
@@ -435,14 +468,20 @@ def sun_info(d, sunrise, sunset):
     sunset_hour_offset = 2 if sunset_hour[-1] == '1' else 0
  
     d.append(draw.Image(540, 402, 45, 45, 'sunrise.svg', embed=True))
-    d.append(draw.Text(sunrise_hour, 35, 632 - sunrise_hour_offset, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 35, 629, 431, font_weight='Bold', fill=SUNRISE, stroke_width=0))
-    d.append(draw.Text(sunrise_minute, 35, 645, 433, font_weight='Bold', fill=SUNRISE, stroke_width=0))
+    d.append(draw.Text(sunrise_hour, 35, 632 - sunrise_hour_offset, 433,
+        font_weight='Bold', fill=SUNRISE, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 35, 629, 431, font_weight='Bold',
+        fill=SUNRISE, stroke_width=0))
+    d.append(draw.Text(sunrise_minute, 35, 645, 433, font_weight='Bold',
+        fill=SUNRISE, stroke_width=0))
 
     d.append(draw.Image(540, 442, 45, 45, 'sunset.svg', embed=True))
-    d.append(draw.Text(sunset_hour, 35, 632 - sunset_hour_offset, 471, font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
-    d.append(draw.Text(':', 35, 629, 469, font_weight='Bold', fill=SUNSET, stroke_width=0))
-    d.append(draw.Text(sunset_minute, 35, 645, 471, font_weight='Bold', fill=SUNSET, stroke_width=0))
+    d.append(draw.Text(sunset_hour, 35, 632 - sunset_hour_offset, 471,
+        font_weight='Bold', fill=SUNSET, stroke_width=0, text_anchor='end'))
+    d.append(draw.Text(':', 35, 629, 469, font_weight='Bold', 
+        fill=SUNSET, stroke_width=0))
+    d.append(draw.Text(sunset_minute, 35, 645, 471, font_weight='Bold',
+        fill=SUNSET, stroke_width=0))
 
 
 def draw_netatmo_outdoor(canvas, outdoor_module, bedroom_module):
@@ -453,14 +492,16 @@ def draw_netatmo_outdoor(canvas, outdoor_module, bedroom_module):
     pressure = bedroom_module['Pressure']
     pressure_text = f'{pressure:.01f}'
     pressure_chart = gauge_chart([(pressure, '#2F4F4F')], 'mb', PRESSURE_SCALE)
-    canvas.append(draw.Image(202, -85, 250, 250, data=pressure_chart, mime_type='image/svg+xml', embed=True))
+    canvas.append(draw.Image(202, -85, 250, 250, data=pressure_chart,
+        mime_type='image/svg+xml', embed=True))
     pressure_trend(d, bedroom_module)
 
     # Humidity
     humidity = outdoor_module['Humidity']
     humidity_text = f'{humidity}%'
     humidity_chart = gauge_chart([(humidity, '#2F4F4F')], '%', HUMIDITY_SCALE)
-    canvas.append(draw.Image(360, -85, 250, 250, data=humidity_chart, mime_type='image/svg+xml', embed=True))
+    canvas.append(draw.Image(360, -85, 250, 250, data=humidity_chart,
+        mime_type='image/svg+xml', embed=True))
 
 def draw_netatmo_indoor(canvas, living_room, bedroom):
     indoor_temp(433, 'sofa.svg', living_room)
@@ -475,7 +516,8 @@ def draw_netatmo_indoor(canvas, living_room, bedroom):
     ]
 
     indoor_humidity_chart = gauge_chart(humidity_data, '%', HUMIDITY_SCALE)
-    d.append(draw.Image(133, 320, 200, 200, data=indoor_humidity_chart, mime_type='image/svg+xml', embed=True))
+    d.append(draw.Image(133, 320, 200, 200, data=indoor_humidity_chart,
+        mime_type='image/svg+xml', embed=True))
 
     indoor_co2 = living_room_module['CO2']
     main_co2 = bedroom_module['CO2']
@@ -486,7 +528,8 @@ def draw_netatmo_indoor(canvas, living_room, bedroom):
     ]
 
     co2_chart = gauge_chart(co2_data, 'ppm', CO2_SCALE)
-    d.append(draw.Image(270, 320, 200, 200, data=co2_chart, mime_type='image/svg+xml', embed=True))
+    d.append(draw.Image(270, 320, 200, 200, data=co2_chart,
+        mime_type='image/svg+xml', embed=True))
 
 def draw_last_netatmo_time(canvas, times):
     oldest = datetime.fromtimestamp(sorted(times)[0], TIMEZONE)
@@ -517,7 +560,8 @@ def draw_last_netatmo_time(canvas, times):
     text_color = 'black' if not out_of_date else 'red'
 
     canvas.append(draw.Text(result, 15, 3, 15,
-        font_family='Noto Sans', font_weight='Bold', fill=text_color, stroke_width=0, text_anchor='start'))
+        font_family='Noto Sans', font_weight='Bold', fill=text_color,
+            stroke_width=0, text_anchor='start'))
 
 def wind_barbs(ax, xs, speeds, directions):
     u = list()
@@ -532,13 +576,15 @@ def wind_barbs(ax, xs, speeds, directions):
     y_lims = ax.get_ylim()
     y_pos = y_lims[0] + ((y_lims[1] - y_lims[0]) * 0.85)
     barb_y = [y_pos] * len(xs)
-    ax.barbs(xs, barb_y, u, v, pivot='middle', linewidth=1.5, barbcolor='#00ff00', zorder=100)
+    ax.barbs(xs, barb_y, u, v, pivot='middle', linewidth=1.5,
+        barbcolor='#00ff00', zorder=100)
 
 def hourly_forecast(canvas, forecast, sunrise, sunset):
     plt.rc('font', family=FONT, weight='regular', size=10)
     fig, ax = plt.subplots(figsize=(4, 2.75))
 
-    temperature_plot(ax, forecast['date'], forecast['temperature_2m'], False, 'black', 3)
+    temperature_plot(ax, forecast['date'], forecast['temperature_2m'],
+        False, 'black', 3)
 
     range = max(forecast['temperature_2m']) - min(forecast['temperature_2m'])
 
@@ -559,7 +605,7 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     ax.set_ylim([range_min, range_max])
 
     precip_hour = ax.twinx()
-    ax.set_zorder(precip_hour.get_zorder()+1)
+    ax.set_zorder(precip_hour.get_zorder() + 1)
     ax.patch.set_visible(False)
 
     precip_plot(precip_hour, forecast['date'], forecast['precipitation'],
@@ -571,7 +617,8 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     wind_barbs(ax, forecast['date'][1::4],
-        list(forecast['wind_speed_10m'][1::4]), list(forecast['wind_direction_10m'][1::4]))
+        list(forecast['wind_speed_10m'][1::4]),
+        list(forecast['wind_direction_10m'][1::4]))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
@@ -579,7 +626,8 @@ def hourly_forecast(canvas, forecast, sunrise, sunset):
     plt.savefig(plot_bytes, format='svg', transparent=True)
     plt.close()
 
-    canvas.append(draw.Image(0, 125, 400, 275, data=plot_bytes.getvalue(), mime_type='image/svg+xml', embed=True))
+    canvas.append(draw.Image(0, 125, 400, 275, data=plot_bytes.getvalue(),
+        mime_type='image/svg+xml', embed=True))
 
 def daily_forecast(canvas, forecast):
     plt.rc('font', family=FONT, weight='regular', size=10)
@@ -617,7 +665,8 @@ def daily_forecast(canvas, forecast):
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %-d', tz=TIMEZONE))
     ax.xaxis.set_major_locator(DayLocator())
 
-    wind_barbs(ax, dates, list(forecast['wind_speed_10m_max']), list(forecast['wind_direction_10m_dominant']))
+    wind_barbs(ax, dates, list(forecast['wind_speed_10m_max']),
+        list(forecast['wind_direction_10m_dominant']))
 
     plt.tight_layout()
     plot_bytes = io.BytesIO()
@@ -625,7 +674,8 @@ def daily_forecast(canvas, forecast):
     plt.savefig(plot_bytes, format='svg', transparent=True)
     plt.close()
 
-    canvas.append(draw.Image(400, 125, 400, 275, data=plot_bytes.getvalue(), mime_type='image/svg+xml', embed=True))
+    canvas.append(draw.Image(400, 125, 400, 275, data=plot_bytes.getvalue(),
+        mime_type='image/svg+xml', embed=True))
 
 def get_remaining_precip(hourly):
     today = pd.Timestamp.now(tz=hourly['date'].iloc[0].tz).normalize()
@@ -666,8 +716,10 @@ if 'dashboard_data' in netatmo['devices'][0]:
 
     # Load and setup meteo forecast
     with sqlite3.connect('weather_display.sqlite') as db:
-        hourly = pd.read_sql('SELECT * FROM open_meteo_hourly', db, parse_dates=['date'])
-        daily = pd.read_sql('SELECT * FROM open_meteo_daily', db, parse_dates='date')
+        hourly = pd.read_sql('SELECT * FROM open_meteo_hourly',
+            db, parse_dates=['date'])
+        daily = pd.read_sql('SELECT * FROM open_meteo_daily',
+            db, parse_dates='date')
 
     current_hour = datetime.now(TIMEZONE).replace(minute=0, second=0, microsecond=0)
     plus_24_hours = current_hour + pd.Timedelta(hours=24)
@@ -686,14 +738,16 @@ if 'dashboard_data' in netatmo['devices'][0]:
 
     # Timestamp
     d.append(draw.Text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 15, 798, 12,
-        font_family='Noto Sans', font_weight='Bold', fill='rgb(50, 50, 50)', stroke_width=0, text_anchor='end'))
+        font_family='Noto Sans', font_weight='Bold', fill='rgb(50, 50, 50)',
+            stroke_width=0, text_anchor='end'))
 
     # Draw basic Netatmo stuff (no rain)
     draw_netatmo_outdoor(d, outdoor_module, bedroom_module)
     draw_netatmo_indoor(d, living_room_module, bedroom_module)
 
     # Netatmo last seen time
-    draw_last_netatmo_time(d, (bedroom_module['time_utc'], outdoor_module['time'], living_room_module['time'], rain_module['time']))
+    draw_last_netatmo_time(d, (bedroom_module['time_utc'], outdoor_module['time'],
+        living_room_module['time'], rain_module['time']))
 
     # Netatmo Battery Status
     battery(436, 'O', outdoor_module['battery'])
