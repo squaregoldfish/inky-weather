@@ -38,7 +38,7 @@ MAIN_COLOR = '#FF0000'
 SUNRISE = '#ff9900'
 SUNSET = '#ff2200'
 
-BARB_BUFFER = 0.8
+BARB_BUFFER = 0.77
 TEMPERATURE_PADDING = 0.5
 
 
@@ -368,8 +368,9 @@ def precip_plot(ax, dates, precip, probability, bar_width, min_y):
     
     ax.bar(dates, precip, color='#9696ff', width=bar_width)
     
+    fixed_probability = [1 if x > 1 else x for x in probability]
     sizes = [1000 * bar_width if x > 0 else 0 for x in precip]
-    ax.scatter(dates, precip * probability, marker='_', s=sizes, c='#0000ff')
+    ax.scatter(dates, precip * fixed_probability, marker='_', s=sizes, c='#0000ff')
     
     if (precip < 0.01).all():
         ax.set_yticks([])
@@ -519,7 +520,7 @@ def wind_barbs(ax, xs, speeds, directions):
         v.append((speeds[i] * -1) * math.cos(radians))
 
     y_lims = ax.get_ylim()
-    y_pos = y_lims[0] + ((y_lims[1] - y_lims[0]) * 0.9)
+    y_pos = y_lims[0] + ((y_lims[1] - y_lims[0]) * 0.85)
     barb_y = [y_pos] * len(xs)
     ax.barbs(xs, barb_y, u, v, pivot='middle', linewidth=1.5, barbcolor='#00ff00', zorder=100)
 
