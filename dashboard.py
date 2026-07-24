@@ -38,7 +38,7 @@ MAIN_COLOR = '#FF0000'
 SUNRISE = '#ff9900'
 SUNSET = '#ff2200'
 
-BARB_BUFFER = 0.77
+BARB_BUFFER = 0.71
 TEMPERATURE_PADDING = 0.5
 
 
@@ -641,16 +641,12 @@ def daily_forecast(canvas, forecast):
     range = max(daily['temperature_2m_max']) - min(daily['temperature_2m_min'])
     
     if range >= 5:
-        range_min = min(daily['temperature_2m_min']) - TEMPERATURE_PADDING
+        range_min = min(daily['temperature_2m_min']) - TEMPERATURE_PADDING - 1
         range_max = max(daily['temperature_2m_max']) + TEMPERATURE_PADDING
     else:
         midpoint = min(daily['temperature_2m_min']) + (range / 2)
         range_min = midpoint - 2.5
         range_max = midpoint + 2.5
-
-        if range >= 4.75:
-            range_min -= 0.2
-            range_max += 0.2
 
     plot_range = range_max - range_min
     range_max = range_min + (plot_range * (1 / BARB_BUFFER))    
