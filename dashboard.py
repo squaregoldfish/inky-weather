@@ -66,10 +66,10 @@ PRESSURE_SCALE = [
 
 CO2_SCALE = [
     {"value":  400.0, "color": [0, 0, 255]},
-    {"value":  550.0, "color": [0, 255, 0]},
-    {"value":  700.0, "color": [255,  128,  50]},
-    {"value":  850.0, "color": [255,  0,  0]},
-    {"value": 1000.0, "color": [200,  0,  0]}
+    {"value":  600.0, "color": [0, 255, 0]},
+    {"value":  800.0, "color": [255,  128,  50]},
+    {"value": 1000.0, "color": [255,  0,  0]},
+    {"value": 1200.0, "color": [200,  0,  0]}
 ]
 
 
