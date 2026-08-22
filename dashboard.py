@@ -551,11 +551,13 @@ def draw_last_netatmo_time(canvas, times):
         if hours > 0:
             out_of_date = True
 
-        result = ''
-        result += f'{hours}:'
-        if minutes < 10:
-            result += '0'
-        result += f'{minutes}'
+            result = ''
+            result += f'{hours}:'
+            if minutes < 10:
+                result += '0'
+            result += f'{minutes}'
+        else:
+            result = str(minutes)
 
     text_color = 'black' if not out_of_date else 'red'
 
