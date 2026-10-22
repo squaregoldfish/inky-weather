@@ -562,7 +562,7 @@ def draw_last_netatmo_time(canvas, times):
     text_color = 'black' if not out_of_date else 'red'
 
     canvas.append(draw.Text(result, 15, 3, 15,
-        font_family='Noto Sans', font_weight='Bold', fill=text_color,
+        font_family='Noto Sans', fill=text_color,
             stroke_width=0, text_anchor='start'))
 
 def wind_barbs(ax, xs, speeds, directions):
@@ -635,7 +635,7 @@ def daily_forecast(canvas, forecast):
     plt.rc('font', family=FONT, weight='regular', size=10)
     fig, ax = plt.subplots(figsize=(4, 2.75))
 
-    dates = pd.to_datetime(forecast['date']).dt.tz_convert('UTC') + timedelta(hours=TIMEZONE_OFFSET)
+    dates = pd.to_datetime(forecast['date'], utc=True) + timedelta(hours=TIMEZONE_OFFSET)
 
     temperature_plot(ax, dates, forecast['temperature_2m_min'], True, 'blue', 2)
     temperature_plot(ax, dates, forecast['temperature_2m_max'], True, 'red', 2)
