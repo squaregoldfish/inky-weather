@@ -433,9 +433,9 @@ def battery(y, name, value):
     d.append(draw.Text(name, 14, 771, y + 5, font_weight="Regular",
         fill="rgb(50, 50, 50)", stroke_width=0))
    
-    if value <= 12:
+    if value <= 20:
         color = 'rgb(255, 0, 0)'
-    elif value <= 18:
+    elif value <= 25:
         color = 'rgb(255, 128, 0)'
     else:
         color = 'rgb(0, 255, 0)'
